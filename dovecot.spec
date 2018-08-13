@@ -6,14 +6,17 @@
 #
 Name     : dovecot
 Version  : 2.3.2.1
-Release  : 1
+Release  : 2
 URL      : https://dovecot.org/releases/2.3/dovecot-2.3.2.1.tar.gz
 Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.2.1.tar.gz
+Source1  : dovecot.service
+Source2  : dovecot.tmpfiles
 Source99 : https://dovecot.org/releases/2.3/dovecot-2.3.2.1.tar.gz.sig
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : LGPL-2.1 MIT
 Requires: dovecot-bin
+Requires: dovecot-config
 Requires: dovecot-lib
 Requires: dovecot-license
 Requires: dovecot-data
@@ -36,11 +39,20 @@ See doc/documentation.txt or http://wiki2.dovecot.org/
 Summary: bin components for the dovecot package.
 Group: Binaries
 Requires: dovecot-data
+Requires: dovecot-config
 Requires: dovecot-license
 Requires: dovecot-man
 
 %description bin
 bin components for the dovecot package.
+
+
+%package config
+Summary: config components for the dovecot package.
+Group: Default
+
+%description config
+config components for the dovecot package.
 
 
 %package data
@@ -106,7 +118,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1534197313
+export SOURCE_DATE_EPOCH=1534197881
 %configure --disable-static
 make  %{?_smp_mflags}
 
@@ -118,13 +130,17 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1534197313
+export SOURCE_DATE_EPOCH=1534197881
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/doc/dovecot
 cp COPYING %{buildroot}/usr/share/doc/dovecot/COPYING
 cp COPYING.LGPL %{buildroot}/usr/share/doc/dovecot/COPYING.LGPL
 cp COPYING.MIT %{buildroot}/usr/share/doc/dovecot/COPYING.MIT
 %make_install
+mkdir -p %{buildroot}/usr/lib/systemd/system
+install -m 0644 %{SOURCE1} %{buildroot}/usr/lib/systemd/system/dovecot.service
+mkdir -p %{buildroot}/usr/lib/tmpfiles.d
+install -m 0644 %{SOURCE2} %{buildroot}/usr/lib/tmpfiles.d/dovecot.conf
 
 %files
 %defattr(-,root,root,-)
@@ -173,6 +189,11 @@ cp COPYING.MIT %{buildroot}/usr/share/doc/dovecot/COPYING.MIT
 /usr/libexec/dovecot/submission
 /usr/libexec/dovecot/submission-login
 /usr/libexec/dovecot/xml2text
+
+%files config
+%defattr(-,root,root,-)
+/usr/lib/systemd/system/dovecot.service
+/usr/lib/tmpfiles.d/dovecot.conf
 
 %files data
 %defattr(-,root,root,-)
