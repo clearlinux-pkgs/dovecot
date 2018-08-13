@@ -1,0 +1,8 @@
+# This file contains additional build requirements that did not get
+# picked up automatically. One name per line, no whitespace.
+lz4-dev
+libcap-dev
+openssl-dev
+Linux-PAM-dev
+bzip2-dev
+xz-dev
