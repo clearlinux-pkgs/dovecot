@@ -64,6 +64,7 @@ Configure miss: pam/pam_appl.h presence
 Configure miss: pam/pam_appl.h
 Configure miss: auth_userokay
 Configure miss: LIBSODIUM
+Configure miss: LIBTIRPC
 Configure miss: library containing quota_open
 Configure miss: sb_stemmer_new in -lstemmer
 Configure miss: special_textcat_Init in -lexttextcat

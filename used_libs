@@ -6,6 +6,7 @@ libcrypto.so.1.0.0
 libdl.so.2
 liblz4.so.1
 liblzma.so.5
+libm.so.6
 libpam.so.0
 libssl.so.1.0.0
 libz.so.1
