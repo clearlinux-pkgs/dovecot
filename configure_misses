@@ -48,16 +48,7 @@ Configure miss: if statfs.f_mntfromname exists
 Configure miss: if struct dqblk.dqb_curblocks exists
 Configure miss: if Q_QUOTACTL ioctl exists
 Configure miss: whether va_lists can be copied by value
-Configure miss: whether CRYPTO_set_mem_functions has new style parameters
-Configure miss: whether SSL_CTX_set_min_proto_version exists
-Configure miss: SSL_CIPHER_get_kx_nid in -lssl
-Configure miss: OPENSSL_thread_stop in -lssl
-Configure miss: OPENSSL_cleanup in -lssl
-Configure miss: ASN1_STRING_get0_data in -lssl
-Configure miss: HMAC_CTX_new in -lssl
-Configure miss: EVP_MD_CTX_new in -lssl
-Configure miss: OBJ_length in -lssl
-Configure miss: EVP_PKEY_get0_RSA in -lssl
+Configure miss: SSL_COMP_free_compression_methods in -lssl
 Configure miss: whether we will be linking in Lua
 Configure miss: pam/pam_appl.h usability
 Configure miss: pam/pam_appl.h presence
