@@ -5,13 +5,13 @@
 # Source0 file verified with key 0x18A348AEED409DA1 (dovecot-ce@dovecot.org)
 #
 Name     : dovecot
-Version  : 2.3.3
-Release  : 8
-URL      : https://dovecot.org/releases/2.3/dovecot-2.3.3.tar.gz
-Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.3.tar.gz
+Version  : 2.3.4
+Release  : 9
+URL      : https://dovecot.org/releases/2.3/dovecot-2.3.4.tar.gz
+Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.4.tar.gz
 Source1  : dovecot.service
 Source2  : dovecot.tmpfiles
-Source99 : https://dovecot.org/releases/2.3/dovecot-2.3.3.tar.gz.sig
+Source99 : https://dovecot.org/releases/2.3/dovecot-2.3.4.tar.gz.sig
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : LGPL-2.1 MIT
@@ -30,7 +30,6 @@ BuildRequires : lz4-dev
 BuildRequires : openssl-dev
 BuildRequires : pkgconfig(zlib)
 BuildRequires : xz-dev
-Patch1: include-crypt-h.patch
 
 %description
 INSTALLATION
@@ -135,16 +134,15 @@ services components for the dovecot package.
 
 
 %prep
-%setup -q -n dovecot-2.3.3
-%patch1 -p1
+%setup -q -n dovecot-2.3.4
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1542395091
-export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error   -Wl,-z,max-page-size=0x1000 -m64 -march=westmere -mtune=haswell"
+export SOURCE_DATE_EPOCH=1547104019
+export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
 unset LDFLAGS
 %configure --disable-static
@@ -158,7 +156,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1542395091
+export SOURCE_DATE_EPOCH=1547104019
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
 cp COPYING %{buildroot}/usr/share/package-licenses/dovecot/COPYING
