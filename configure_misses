@@ -33,6 +33,7 @@ Configure miss: ucred.h presence
 Configure miss: ucred.h
 Configure miss: sys/ucred.h usability
 Configure miss: sys/ucred.h presence
+Configure miss: whether gcc is clang 3.3+
 Configure miss: kevent
 Configure miss: walkcontext
 Configure miss: struct sockpeercred

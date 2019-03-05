@@ -1,33 +1,3894 @@
-2019-02-05 09:18:41 +0200 Aki Tuomi <aki.tuomi@open-xchange.com> (f79e8e7e4)
+2019-02-25 13:21:31 +0200 Timo Sirainen <timo.sirainen@open-xchange.com> (513208660)
 
-    Released v2.3.4.1
+    Released v2.3.5.
 
 
 M	NEWS
 M	configure.ac
 
-2019-01-16 18:28:57 +0200 Aki Tuomi <aki.tuomi@open-xchange.com> (3c0b8769e)
+2019-02-25 20:55:03 +0200 Timo Sirainen <timo.sirainen@open-xchange.com> (cb6af3a04)
+
+    fs-posix: fs_read_stream() - Don't close file's fd
+
+    This is especially important with newly created files, because they may 
+    still be accessed after reading. The next file access attempt after 
+    fs_read_stream() might cause the file to be recreated and crash.
+
+    Fixes: Panic: file fs-posix.c: line 252 (fs_posix_create): assertion failed:
+    (file->temp_path == NULL)
+
+M	src/lib-fs/fs-posix.c
+
+2019-02-19 10:49:37 +0200 Timo Sirainen <timo.sirainen@open-xchange.com> (8cfb03a1f)
+
+    lib: test-istream-seekable - Add asserts to make sure blocking state changes
+    at EOF
+
+
+M	src/lib/test-istream-seekable.c
+
+2019-02-19 10:22:43 +0200 Timo Sirainen <timo.sirainen@open-xchange.com> (ba43795f2)
+
+    lib-storage: mail_get_*stream*() - Assert that returned streams are blocking
+
+    Several callers already rely on them being blocking. Making these asserts 
+    explicit makes sure that any bugs are caught early.
+
+M	src/lib-storage/mail.c
+
+2019-02-19 10:17:45 +0200 Timo Sirainen <timo.sirainen@open-xchange.com> (c71f089f5)
+
+    lib: istream-seekable - Change stream to be blocking=TRUE after reaching EOF
+
+    After EOF is reached, the stream is now fully read into file or memory. 
+    read()s can no longer return 0, so blocking=TRUE can be used.
+
+    Some callers were reusing the seekable stream in places that required 
+    blocking=TRUE.
+
+    Fixes at least with imapsieve vnd.dovecot report extension: Panic: file
+    ostream.c: line 427 (o_stream_nsend_istream): assertion failed:
+    (instream->blocking)
+
+M	src/lib/istream-seekable.c
+
+2019-02-19 11:31:45 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (a57998e76)
+
+    lib-ssl-iostream: iostream-ssl-test - Update the test certificate to have
+    very long expiry period.
+
+    The old certificate expired after one year, which causes all kinds of unit
+    test failures.
+
+M	src/lib-ssl-iostream/iostream-ssl-test.c
+
+2018-08-30 16:40:16 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (28caca174)
+
+    lib-http: Add assert to make sure http_client_init_shared(NULL, NULL) isn't
+    called
+
+    This should make scan-build happy.
+
+M	src/lib-http/http-client.c
+
+2018-12-27 14:13:15 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (511f513f6)
+
+    lib-smtp: client: Move connection to TRANSACTION state immediately when a
+    transaction is started.
+
+    Before, it waited until the actual start handler was called from timeout,
+    but that causes a race condition with
+    mtp_client_connection_abort_transaction(), which in turn causes an assert
+    panic.
+
+    Panic was:
+
+    Panic: file smtp-client-connection.c: line 2153
+    (smtp_client_connection_abort_transaction): assertion failed: (conn->state
+    != SMTP_CLIENT_CONNECTION_STATE_READY)
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-11-11 20:41:18 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (cd7ea3c82)
+
+    lib-smtp: client: Properly reset connection state upon reconnect.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-11-11 20:32:09 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (615d91af7)
+
+    lib-smtp: client: connection: Prevent timeout leak for transaction start.
+
+    Perform timeout management in a single place. Also, always start the next 
+    transaction only through a timeout.
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2019-01-14 14:37:03 +0200 Aki Tuomi <aki.tuomi@open-xchange.com> (808f0731c)
+
+    m4: Fix moduledir behaviour
+
+    This is mainly a fix for plugins that depend on dovecot.m4
+
+M	configure.ac
+M	m4/dovecot.m4
+
+2018-06-19 15:30:36 +0300 Phil Carmody <phil@dovecot.fi> (b5a86f084)
+
+    m4/dovecot.m4: rename valgrind output file to hide it from certain tests
+
+    Some lib-http tests use readdir() to create test cases, and sometimes object
+    to the contents of test.out.$$. However, as lib-http is also sensitive to
+    certain characters in the filenames of the files it uses, we can hide the
+    valgrind output by chosing its filename to exclude it from the lib_http
+    tests. Non-initial '~' is not known to cause any issues for either the shell
+    or any known operating system, so is the safest of lib-http's 'dodgy'
+    characters to use as the separator.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	m4/dovecot.m4
+
+2018-08-29 14:57:45 +0300 Phil Carmody <phil@dovecot.fi> (a8d087136)
+
+    m4/dovecot.m4 - Apply DRY principle to test output filename
+
+    Define the name we will use for the file once, then just use that variable 
+    instead of using explicit repeatition.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	m4/dovecot.m4
+
+2018-06-04 19:58:23 +0300 Phil Carmody <phil@dovecot.fi> (764ef7e00)
+
+    m4/dovecot.m4: run-test.sh - disable valgrind for individual tests
+
+    OpenSSL doesn't like valgrind on my setup, so permit a local instalation to
+    have a list of excluded binaries that won't use valgrind in make check.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	m4/dovecot.m4
+
+2018-06-19 13:29:46 +0300 Phil Carmody <phil@dovecot.fi> (e1e7ff077)
+
+    lib-http: increase pool sizes in tests
+
+    Pool growth messages spam the test output, just dive in with a slightly 
+    larger default to shut them up. Only affects these individual tests, not any
+    other users of the library.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-http/test-http-payload.c
+M	src/lib-http/test-http-server-errors.c
+
+2018-06-19 13:28:12 +0300 Phil Carmody <phil@dovecot.fi> (18b8e66b9)
+
+    lib-http: change default client/server pool sizes when using SSL
+
+    SSL carries a lot of state with it, so just start with a bigger pool if we
+    know we're using it.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-http/http-client.c
+M	src/lib-http/http-server.c
+
+2018-06-14 08:51:37 +0300 Phil Carmody <phil@dovecot.fi> (4db5e9398)
+
+    lib-http: harden payload tests against dodgy filenames
+
+    Tests use files from readdir() as input, but do no sanitation of the names,
+    and therefore things like editor temp files can cause havoc with the HTTP
+    request parser.
+
+    The solution is to trap dodgy characters in the filenames, and ignore those
+    files. Initially, trap HTTP's "unsafe" and "reserved" characters.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-http/test-http-payload.c
+
+2019-01-07 15:35:07 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (690b2c968)
+
+    lib-mail: ostream-dot - Add unit test for parent stream buffer being almost
+    full.
+
+
+M	src/lib-mail/test-ostream-dot.c
+
+2018-12-15 16:32:22 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (cc1c3fb1e)
+
+    lib-mail: ostream-dot - Add asserts to make sure max_bytes doesn't underflow
+
+
+M	src/lib-mail/ostream-dot.c
+
+2018-12-15 16:24:42 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (3df4e47db)
+
+    lib-mail: ostream-dot - Fix potential assert-crash when parent stream buffer
+    gets full
+
+    If max_bytes=1, the (max_bytes-2) calculation brings it to (size_t)-1. This 
+    causes too much data to be sent to the parent stream, which then returns a 
+    partial write and causes an assert-crash.
+
+    The final chunk calculation doesn't need the -2 check, because additional 
+    bytes aren't inserted at that point.
+
+    Fixes: Panic: file ostream-dot.c: line 208 (o_stream_dot_sendv): assertion
+    failed: ((size_t)ret == sent + added)
+
+M	src/lib-mail/ostream-dot.c
+
+2018-02-20 12:04:13 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (848d08733)
+
+    lib: Fix buffer code to satisfy static analyzers
+
+
+M	src/lib/buffer.c
+
+2018-02-08 11:56:08 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (c6ec64a05)
+
+    lib: randgen - Init seed to 0
+
+    Satisfies static analyzer, the seed is guaranteed to get filled with random
+    data.
+
+M	src/lib/randgen.c
+
+2018-02-08 11:45:20 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (94dc9b097)
+
+    trash: Use TRASH_USER_CONTEXT_REQUIRE
+
+    Satisfies static analyzer
+
+M	src/plugins/trash/trash-plugin.c
+
+2018-01-30 14:14:42 +0200 Phil Carmody <phil@dovecot.fi> (8463321f5)
+
+    lib/randgen - warn when DOVECOT_SRAND is not able to be used
+
+    As suggested by Jeff, it's friendly to warn if we're unable to act upon the
+    request for reproduceable random numbers because we're not built for that.
+
+    Note, this deliberately permits a blank string, so that you can silence the
+    warning by prefixing a command with an empty
+     DOVECOT_SRAND= which is taken as an explicit attempt to disable use of the
+    feature.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib/randgen.c
+
+2017-12-11 14:03:13 +0200 Phil Carmody <phil@dovecot.fi> (00a398525)
+
+    lib/lib-test: restore DOVECOT_SRAND feature in DEBUG builds
+
+    Add a deterministic PRNG, an ability to force its use, and an ability to
+    re-use the same sequence later.
+
+    Since proper random numbers have been forced into use, making reproducable
+    tests isn't quite as easy as it used to be, it's 3 steps rather than 2. When
+    seeing an intermittent test failure:
+    - rerun the tests with environmental variable DOVECOT_SRAND=kiss
+    - upon seeing a new failure case, note the seed logged at the failure
+    - debug using DOVECOT_SRAND=<that number>
+
+    In non-DEBUG builds, there's no trace of this code, and the randomisation
+    that is an inherent part of many tests remains non-reproduceable.
+
+    Works with all of the RNG preferences, getrandom/urandom/arc4.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-test/test-common.c
+M	src/lib/randgen.c
+M	src/lib/randgen.h
+
+2018-12-03 18:45:43 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (b8cc5abe0)
+
+    lib-smtp: client: Make sending the XCLIENT command(s) always implicit and do
+    it only once.
+
+    For most servers, XCLIENT changes the ip:port identity of the client,
+    causing it to lose privileges to send more XCLIENT commands. For long
+    XCLIENT commands split in a series of XCLIENT commands, the ip:port
+    parameters were sent last already, so that did not cause problems even
+    before this change. However, the old code assumed it could update XCLIENT
+    fields later on, which is often not possible.
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-connection.h
+M	src/lib-smtp/smtp-client-private.h
+M	src/submission/submission-backend-relay.c
+
+2018-12-03 18:45:43 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (0932c42a7)
+
+    submission: relay backend: Don't bother updating the protocol in proxy data.
+
+    Old SMTP clients cannot use the submission service, since these cannot
+    perform the required authentication.
+
+M	src/submission/submission-backend-relay.c
+
+2018-12-03 18:45:42 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (fdc3046b9)
+
+    submission: Move client_create_backend_default() after
+    smtp_server_connection_login() in client_create().
+
+    This way, the created default backend can use the HELO data provided to
+    smtp_server_connection_login().
+
+M	src/submission/submission-client.c
+
+2018-12-03 18:45:42 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (c02fdbb83)
+
+    lib-smtp: client: Allow deferring sending the XCLIENT command until
+    authentication or first mail transaction.
+
+    This allows updating the proxy data until the XCLIENT command actually needs
+    to be sent. For submission, this means that later EHLO domain changes can
+    still be accounted for. This change makes the simplifications in subsequent
+    changes easier.
+
+M	src/lib-smtp/smtp-client-command.c
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client.h
+
+2018-12-03 18:45:41 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (3a08f5c05)
+
+    lib-smtp: client: Merge smtp_client_connection_init_xclient() into
+    smtp_client_connection_authenticate().
+
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-12-03 18:45:40 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (945214b32)
+
+    lib-smtp: client: Move smtp_client_connection_send_xclient() before
+    smtp_client_connection_authenticate().
+
+    Keeps ordering of functions logical for next changes.
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-12-03 18:45:40 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (0d883b2cc)
+
+    submission: relay backend: Provide data for the HELO and PROTO XCLIENT
+    fields to the relay connection.
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-12-03 18:45:39 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (be6f4099a)
+
+    lib-smtp: server: Use the HELO domain provided to
+    smtp_server_connection_login() immediately.
+
+    Before, it was only used when no new HELO/EHLO command was issued before
+    MAIL.
+
+M	src/lib-smtp/smtp-server-cmd-mail.c
+M	src/lib-smtp/smtp-server-connection.c
+M	src/lib-smtp/smtp-server-private.h
+
+2018-12-03 18:45:39 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (da2b4d7d5)
+
+    lib-smtp: client: Remove proxy_data parameter from
+    smtp_client_connection_send_xclient().
+
+    Use smtp_client_connection_update_proxy_data() to change fields in the proxy 
+    data recorded in the client.
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-connection.h
+M	src/submission/submission-backend-relay.c
+
+2018-12-03 18:45:38 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (f69d83143)
+
+    lib-smtp: client: Add smtp_client_connection_update_proxy_data().
+
+    Allows updating the proxy data after creation of the connection.
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-connection.h
+
+2018-12-03 18:45:38 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (98679b003)
+
+    lib-smtp: client: Make smtp_client_connection_send_xclient() return void.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-connection.h
+M	src/submission/submission-backend-relay.c
+
+2018-12-03 18:45:37 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (d4d719f8a)
+
+    lib-smtp: client: Copy proxy data from settings using the new
+    smtp_proxy_data_merge() functioṅ.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-12-03 18:45:36 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (1128d1574)
+
+    lib-smtp: common: Add smtp_proxy_data_merge().
+
+
+M	src/lib-smtp/smtp-common.c
+M	src/lib-smtp/smtp-common.h
+
+2018-12-03 18:45:35 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (51e1340e3)
+
+    lib-smtp: client: Drop smtp_client_command_mail_submit_after().
+
+    It is not used.
+
+M	src/lib-smtp/smtp-client-command.c
+M	src/lib-smtp/smtp-client-command.h
+
+2018-12-03 18:45:24 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (f758ca68f)
+
+    lib-smtp: client: connection: Fix copying of PROTO XCLIENT field in proxy
+    data.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-12-03 18:45:17 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (11de7fcbe)
+
+    lib-smtp: syntax: Fix smtp_ehlo_line_parse() to also record the last
+    parameter.
+
+
+M	src/lib-smtp/smtp-syntax.c
+
+2018-11-09 13:03:43 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (54e41f5cb)
+
+    submission: Install header files
+
+    This allows creating external submission plugins.
+
+M	src/submission/Makefile.am
+
+2018-10-31 17:19:42 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (3bef9e55e)
+
+    lib-fs: If fs_get_metadata() isn't implemented, return internal metadata
+    anyway
+
+    The metadata is sometimes used for transferring internal metadata within the 
+    files. This metadata isn't stored to disk. So even if the fs driver doesn't 
+    support metadata at all, it should still be possible to get/set the internal 
+    metadata. Setting it was already possible, but getting wasn't.
+
+M	src/lib-fs/fs-api.c
+
+2018-11-02 10:39:17 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (88b909cbf)
+
+    submission: relay backend: Forward a (possibly multi-line) 421 reply from
+    relay server to the client.
+
+    Before, it substituted a generic 421 error reply, which is far less helpful.
+
+M	src/submission/submission-backend-relay.c
+
+2018-11-02 10:37:22 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (8b60a188f)
+
+    submission: client: Properly handle a multi-line reason string in
+    client_disconnect().
+
+    Pass the multi-line string to smtp_server_connection_terminate(), yet log it
+    as a single line.
+
+M	src/submission/submission-client.c
+
+2018-11-02 10:26:53 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (cb4aae7dd)
+
+    lib-smtp: server: connection: Properly handle a multi-line reason in
+    smtp_server_connection_terminate().
+
+
+M	src/lib-smtp/smtp-server-connection.c
+
+2018-11-02 10:43:11 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (c4fd34ba9)
+
+    lib-smtp: server: connection: Properly handle a multi-line reason in
+    smtp_server_connection_disconnect().
+
+    Convert it to a single line string.
+
+M	src/lib-smtp/smtp-server-connection.c
+
+2018-11-02 10:23:42 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (673327ca7)
+
+    lib-smtp: server: connection: Add smtp_server_connection_reply_lines().
+
+    This function immediately sends a reply on the connection with the indicated 
+    status, enhanced code and text lines.
+
+M	src/lib-smtp/smtp-server-connection.c
+M	src/lib-smtp/smtp-server-private.h
+
+2018-11-02 10:17:30 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (4a6cdec31)
+
+    lib-smtp: server: connection: Add debug messages for protocol elements sent
+    outside the normal reply API.
+
+
+M	src/lib-smtp/smtp-server-connection.c
+
+2018-11-02 10:14:57 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (7b724a029)
+
+    lib-smtp: reply: Add smtp_reply_get_text_lines_omit_prefix().
+
+    This returns a string array of the lines in the reply, omitting the prefix
+    (the first word), which is usually a "<domain>" value.
+
+M	src/lib-smtp/smtp-reply.c
+M	src/lib-smtp/smtp-reply.h
+
+2018-11-02 10:11:35 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (064e379ad)
+
+    lib-smtp: reply: Make parsing enhanced status codes available as a separate
+    function.
+
+
+M	src/lib-smtp/smtp-reply-parser.c
+M	src/lib-smtp/smtp-reply-parser.h
+
+2018-11-02 10:12:20 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (b8ebcd650)
+
+    lib: strfuncs: Add t_str_oneline().
+
+    This puts the string on a single line by replacing all newlines with spaces
+    and dropping any carriage returns
+
+M	src/lib/strfuncs.c
+M	src/lib/strfuncs.h
+M	src/lib/test-strfuncs.c
+
+2018-11-02 10:08:26 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (03e2a66ad)
+
+    lib-smtp: client: transaction: Hold a reference to the transaction while
+    calling the RCPT command callback.
+
+    This fixes memory problems when the callback inadvertently gets the
+    transaction destroyed.
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-11-01 01:14:50 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (2d16e2ed5)
+
+    lib-smtp: server: recipient: Hold a reference to the recipient while calling
+    a non-destroy hook.
+
+    Prevents memory problems when the hook inadvertently gets the recipient 
+    destroyed. Unlike the server command, this is not strictly necessary for the 
+    recipient object, but we add this anyway to prevent future problems when the 
+    recipient implementation becomes more complex (e.g. with additional hooks).
+
+M	src/lib-smtp/smtp-server-cmd-rcpt.c
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server-recipient.c
+
+2018-11-01 00:58:47 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (04c9d141d)
+
+    lib-smtp: server: recipient: Prevent reference counting from within destroy
+    hook.
+
+
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server-recipient.c
+
+2018-11-01 01:25:10 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (ce9373c8d)
+
+    lib-smtp: server: recipient: Add reference counting.
+
+    Unlike the server command, this is not strictly necessary for the recipient 
+    object, but we add this anyway to prevent future problems when the recipient 
+    implementation becomes more complex.
+
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server-recipient.c
+
+2018-11-01 00:12:03 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (43fa7cdef)
+
+    lib-smtp: server: Make sure command object is not used after it is destroyed
+    in hook.
+
+
+M	src/lib-smtp/smtp-server-command.c
+M	src/lib-smtp/smtp-server-connection.c
+M	src/lib-smtp/smtp-server-private.h
+
+2018-11-01 01:40:10 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (c76bb01ce)
+
+    lib-smtp: server: command: Hold connection reference while calling replied
+    hook.
+
+
+M	src/lib-smtp/smtp-server-command.c
+
+2018-11-01 00:44:10 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (f4116a486)
+
+    lib-smtp: server: command: Move core of smtp_server_command_submit_reply()
+    into a separate function.
+
+    Makes the next changes easier.
+
+M	src/lib-smtp/smtp-server-command.c
+
+2018-11-01 00:39:21 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (c45761a4d)
+
+    lib-smtp: server: command: Hold a reference to the command while calling a
+    non-destroy hook.
+
+    Prevents memory problems when the hook inadvertently gets the command
+    destroyed.
+
+M	src/lib-smtp/smtp-server-command.c
+M	src/lib-smtp/smtp-server-private.h
+
+2018-11-01 00:27:50 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (48dba2d13)
+
+    lib-smtp: server: command: Prevent reference counting from within destroy
+    hook.
+
+
+M	src/lib-smtp/smtp-server-command.c
+M	src/lib-smtp/smtp-server-private.h
+
+2018-11-01 22:22:34 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (352703891)
+
+    lib-smtp: Consistently use signed integer for reference counters.
+
+
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-server-private.h
+
+2018-10-30 09:53:07 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (00493144c)
+
+    submission: relay backend: Add assertion in
+    backend_relay_handle_relay_reply() to address compiler warning.
+
+    Assert that the error message is assinged when the result is FALSE.
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-30 09:57:31 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (aeb96b2c1)
+
+    submission: relay backend: In backend_relay_handle_relay_reply(): Only
+    determine error detail when it is used.
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-29 01:36:43 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (9bc54d9cd)
+
+    submission: Make include directory available to external plugins.
+
+
+M	dovecot-config.in.in
+M	m4/dovecot.m4
+
+2018-10-25 23:50:55 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (5c0cc0210)
+
+    submission: relay backend: Allow creating the client transaction with
+    specific flags.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+
+2018-10-18 02:15:07 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (3a9aefff5)
+
+    lib-smtp: client: Allow enabling the LMTP per-RCPT DATA reply behavior for
+    ESMTP transactions.
+
+    This is non-standard.
+
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client-transaction.c
+M	src/lib-smtp/smtp-client-transaction.h
+M	src/lib-smtp/smtp-submit.c
+M	src/lib-smtp/test-smtp-client-errors.c
+M	src/lib-smtp/test-smtp-payload.c
+M	src/lmtp/lmtp-proxy.c
+M	src/submission/submission-backend-relay.c
+
+2018-10-27 12:20:01 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (0df4aa4e9)
+
+    submission: Add support for module contexts to backend.
+
+
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+
+2018-10-27 11:56:59 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (d538e88c0)
+
+    submission: Allocate each backend on its own pool.
+
+    This allows allocating per-backend module data.
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+
+2018-10-26 21:00:00 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (9989814e4)
+
+    submission: Add support for modifying the transaction path and parameters in
+    the trans_start backend vfunc.
+
+    To keep the changes limited to a particular backend, the server transaction 
+    cannot be modified. Also, creating a mock server transaction and passing it
+    on is not a good idea, since it is not a simple container struct.
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+
+2018-10-26 17:00:32 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (7ec923c74)
+
+    submission: Add backend flag indicating whether the backend is ready.
+
+    This flag is set just before the ready() vfunc is called.
+
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+
+2018-10-18 23:35:05 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (88a15ca2f)
+
+    submission: Add backend vfunc called when the backend is ready.
+
+    For a relay backend, this means that the connection is fully connected and 
+    handshaked. For any backend it means the capabilities are known (and passed
+    as a parameter to the ready function).
+
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+
+2018-10-25 23:50:22 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f9eb4572c)
+
+    lib-smtp: params: Explicitly allow smtp_params_*_add_extra() value parameter
+    to be NULL.
+
+
+M	src/lib-smtp/smtp-params.h
+
+2018-10-17 01:34:54 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (c04e36ae1)
+
+    submission: relay backend: Allow recording extra (non-standard)
+    capabilities.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+
+2018-10-16 23:58:23 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (6b49a299c)
+
+    submission: relay backend: Provide access to the client connection and
+    transaction for plugins.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-10-17 00:59:02 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (e559e8207)
+
+    lib-smtp: client: Add support for recording extra (non-standard)
+    capabilities from server.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-connection.h
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client.c
+M	src/lib-smtp/smtp-client.h
+M	src/lib-smtp/smtp-common.h
+
+2018-10-17 01:05:07 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (7d2ffc678)
+
+    lib-smtp: client: connection: Consolidate capability data into a struct.
+
+    Allows clearing it reliably.
+
+M	src/lib-smtp/smtp-client-command.c
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-private.h
+
+2018-10-26 22:26:53 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (00640bd83)
+
+    submission: Clarify the behavior of command handlers and the requirements
+    for overriding them.
+
+
+M	src/submission/submission-backend.h
+M	src/submission/submission-client.h
+
+2018-10-25 21:02:46 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (48dd6d5b3)
+
+    submission: Use the new smtp_server_cmd_noop_reply_success() function.
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-03-12 02:59:28 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (343d00daa)
+
+    lmtp: local: Use the new smtp_server_cmd_rcpt_reply_success() function.
+
+
+M	src/lmtp/lmtp-local.c
+
+2018-10-25 20:29:30 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (5acc9d5dd)
+
+    lib-smtp: server: NOOP command: Implement
+    smtp_server_cmd_noop_reply_success() for sending default success reply.
+
+
+M	src/lib-smtp/smtp-server-cmd-noop.c
+M	src/lib-smtp/smtp-server.h
+
+2018-10-25 20:38:26 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (039673b55)
+
+    lib-smtp: server: RSET command: Implement
+    smtp_server_cmd_rset_reply_success() for sending default success reply.
+
+
+M	src/lib-smtp/smtp-server-cmd-rset.c
+M	src/lib-smtp/smtp-server.h
+
+2018-03-12 01:03:24 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (cc446d240)
+
+    lib-smtp: server: RCPT command: Implement
+    smtp_server_cmd_rcpt_reply_success() for sending default success reply.
+
+
+M	src/lib-smtp/smtp-server-cmd-rcpt.c
+M	src/lib-smtp/smtp-server.h
+
+2018-03-12 01:01:46 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (8201b5e4b)
+
+    lib-smtp: server: MAIL command: Implement
+    smtp_server_cmd_mail_reply_success() for sending default success reply.
+
+
+M	src/lib-smtp/smtp-server-cmd-mail.c
+M	src/lib-smtp/smtp-server.h
+
+2018-10-28 12:08:50 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (7770b655a)
+
+    submission: relay backend: Always reset the trans_started flag upon
+    trans_free().
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-28 12:08:13 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (fb410a48d)
+
+    submission: backend: Properly reset the trans_started flag upon
+    trans_free().
+
+
+M	src/submission/submission-backend.c
+
+2018-10-19 17:39:36 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (025c10a95)
+
+    doc: example-config: Document the new submission_backend_capabilities
+    setting.
+
+
+M	doc/example-config/conf.d/20-submission.conf
+
+2018-10-29 17:27:17 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (a76252030)
+
+    submission,submission-login: Implicitly enable CHUNKING when
+    submission_backend_capabilities setting includes BINARYMIME.
+
+    BINARYMIME requires CHUNKING support and we should not expect administrators
+    to always be aware of that fact.
+
+M	src/submission-login/client.c
+M	src/submission/submission-client.c
+
+2018-10-19 17:12:10 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f69da23f5)
+
+    submission: relay backend: VRFY command: Avoid forwarding 500 and 502
+    replies back to client.
+
+    These are in fact non-standard for VRFY and indicate that VRFY support is 
+    disabled, which is not allowed by the specification. Instead, we now
+    substitute the default 252 response.
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-19 17:02:08 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (325c32c7b)
+
+    lib-smtp: server: VRFY command: Implement smtp_server_cmd_reply_default()
+    for sending default reply.
+
+
+M	src/lib-smtp/smtp-server-cmd-vrfy.c
+M	src/lib-smtp/smtp-server.h
+
+2018-10-19 16:42:41 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (eb62300ff)
+
+    submission,submission-login: Omit listing VRFY capability if the backend
+    provides no explicit support.
+
+
+M	src/submission-login/client-authenticate.c
+M	src/submission/submission-client.c
+M	src/submission/submission-commands.c
+
+2018-10-19 11:15:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (37c38c6b7)
+
+    submission-login: Use the submission_backend_capabilities setting to compose
+    the EHLO reply when configured.
+
+    This way, the EHLO response prior to AUTH will better match the EHLO
+    response after AUTH.
+
+M	src/submission-login/client-authenticate.c
+M	src/submission-login/client.c
+M	src/submission-login/client.h
+M	src/submission-login/submission-login-settings.c
+M	src/submission-login/submission-login-settings.h
+
+2018-10-19 11:24:35 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (11994647a)
+
+    submission-login: Add the VRFY capability to the EHLO reply.
+
+    The post-login service does it too.
+
+M	src/submission-login/client-authenticate.c
+
+2018-10-19 00:35:53 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (e2d3eb0a8)
+
+    submission: relay backend: Fix non-transaction commands to work when
+    submission_backend_capabilities is configured.
+
+    When submission_backend_capabilities is configured, the backend is not
+    started until the first transaction is started. But for commands that should
+    work outside the transaction, the backend should also be started, which was
+    not the case before this fix.
+
+M	src/submission/submission-backend.c
+
+2018-10-19 00:01:40 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2e2ec7f7c)
+
+    submission: backends: Set the started flag before calling the backend start
+    vfunc.
+
+    This prevents recursive mishaps.
+
+M	src/submission/submission-backend.c
+
+2018-10-18 13:55:53 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (c4c5af0f6)
+
+    lib-fts: test-fts-tokenizer: Verify fts_tokenizer_create() return value
+
+
+M	src/lib-fts/test-fts-tokenizer.c
+
+2018-10-12 09:45:42 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (8cf4fdbf1)
+
+    submission: relay backend: Handle the LMTP per-RCPT DATA reply behavior when
+    enabled.
+
+    Without this change, enabling the per-RCPT DATA reply behavior on the server 
+    side will not have the desired effect.
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-18 01:39:05 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (fcdd8e67b)
+
+    submission: relay backend: Log an error when relayed commands fail with
+    connection-related errors.
+
+    Errors sent by the remote server are handled by the command reply handler
+    and are logged using i_info() where relevant.
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-12 10:34:21 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (5cca9b095)
+
+    submission: relay backend: Fix comment in RCPT command code.
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-12 09:42:29 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (959f3b23a)
+
+    submission: recipient: Add field for associating backend context.
+
+
+M	src/submission/submission-recipient.h
+
+2018-10-12 09:34:56 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (31755e300)
+
+    lmtp: DATA command: Assert that the server transaction flags are correct for
+    LMTP.
+
+
+M	src/lmtp/commands.c
+
+2018-10-06 11:21:35 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (26af7752e)
+
+    lib-smtp: server: Allow enabling the LMTP per-RCPT DATA reply behavior for
+    ESMTP transactions.
+
+    This is non-standard.
+
+M	src/lib-smtp/smtp-server-cmd-data.c
+M	src/lib-smtp/smtp-server-cmd-mail.c
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server-transaction.c
+M	src/lib-smtp/smtp-server.h
+M	src/submission/submission-backend-relay.c
+
+2018-10-12 09:23:27 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (87f60ed53)
+
+    submission: relay backend: Do not close the client connection for failure in
+    a non-default backend.
+
+    Adjusts the backend API to remember the failure until the present
+    transaction is reset. In the mean time, any commands issued to the backend
+    are failed immediately. In contrast, failure on the default backend will
+    cause the client connection to be closed, like before.
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+
+2018-10-12 10:01:12 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (7907039e8)
+
+    submission: relay backend: Use (potentially) modified reply after
+    backend_relay_handle_relay_reply().
+
+    Before, it sometimes still referred to the original reply struct from the
+    client callback.
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-12 10:07:14 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (1204808c8)
+
+    submission: relay backend: Use smtp_reply_is_success() to evaluate reply
+    form relay.
+
+    Before, it evaluated the reply status directly.
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-14 14:23:32 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (774da4899)
+
+    lib-smtp: server: Add smtp_server_command_get_reply_count().
+
+    Returns the number of replies expected to the command.
+
+M	src/lib-smtp/smtp-server-command.c
+M	src/lib-smtp/smtp-server.h
+
+2018-10-14 13:45:56 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (ea2e602ee)
+
+    lib-smtp: client: Make smtp_client_transaction_unref(NULL) a no-op.
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-10-14 13:43:42 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (3332e1f4d)
+
+    lib-smtp: client: Make smtp_client_transaction_destroy(NULL) a no-op.
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-10-11 00:50:26 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (e0b70e837)
+
+    submission: Allocate recipients for the client transaction on the server
+    recipient pool.
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-11 00:49:44 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (7157254ff)
+
+    lmtp: proxy: Allocate recipients for the client transaction on the server
+    recipient pool.
+
+
+M	src/lmtp/lmtp-proxy.c
+
+2018-10-11 00:49:33 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (007772051)
+
+    lib-smtp: client: transaction: Add alternative function for adding a
+    recipient on an application-provided pool.
+
+    This allows modifying the recipient object beyond approval. Before, it was 
+    always moved to the transaction pool, thereby invalidating the original
+    returned pointer. This way, the data_calback and context can be set at a
+    later time, e.g. when the DATA command is being processed. This makes a
+    choice between LMTP-style and SMTP-style replies to the DATA command a bit
+    easier to handle. Also, the recipient is entirely allocated on a single pool
+    between the client and server side, which should improve memory consumption
+    a little. As a bonus, this removes the need to have dummy DATA callbacks.
+
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client-transaction.c
+M	src/lib-smtp/smtp-client-transaction.h
+
+2018-10-12 10:42:55 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2517541f0)
+
+    lib-smtp: client: transaction: Fix and amend a few comments in the header.
+
+
+M	src/lib-smtp/smtp-client-transaction.h
+
+2018-10-12 09:24:06 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2605acd5f)
+
+    lib-smtp: client: Remove unused "failed" field from struct
+    smtp_client_transaction_mail.
+
+
+M	src/lib-smtp/smtp-client-private.h
+
+2018-10-14 22:34:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (053d53d0b)
+
+    submission: Fix starting secondary backends created before the server-side
+    transaction is fully created.
+
+    Record an array of those backends and start them once the transaction is 
+    created. Before, this was implemented using the array of approved recipients
+    (which each point to their backend). However, this does not work, since
+    there can be no approved recipients when there is no server-side transaction
+    yet.
+
+M	src/submission/submission-backend.c
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-10-14 23:00:11 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (e66444352)
+
+    submission: relay backend: Properly manage the trans_started flag.
+
+    Sometimes it was not set at all. This didn't lead to problems in most cases,
+    but this was at least confusing while debugging. Also, the flag is set
+    before the client transaction is actually started, making sure (future)
+    recursive problems will not occur.
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-14 22:48:58 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (26f4ccf8b)
+
+    submission: relay backend: Set the immediate for the client transaction no
+    matter where it is created.
+
+    Forgot a few instances.
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-14 22:42:36 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (4e6966a4f)
+
+    submission: RCPT command: Move starting the backend transaction from
+    submission-commands.c to submission-backend.c.
+
+    This way, the transaction is only started from RCPT when the backend needs
+    it at this point.
+
+M	src/submission/submission-backend.c
+M	src/submission/submission-commands.c
+
+2018-09-23 19:53:07 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (599845b68)
+
+    submission: relay backend: Add support for relaying to a unix socket.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+
+2018-09-23 19:43:05 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (deb8c48b9)
+
+    lib-smtp: client: Allow connecting to SMTP/LMTP services offered through
+    unix sockets.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-connection.h
+M	src/lib-smtp/smtp-client-private.h
+
+2018-09-23 19:32:11 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (28a96e0e4)
+
+    lib-smtp: client: Move creation of connection object to a separate function.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-10-07 18:37:48 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (1504d725c)
+
+    lib-smtp: server: Record the associated server command in the recipient
+    object.
+
+    This avoids the need to do that in application code.
+
+M	src/lib-smtp/smtp-server-cmd-data.c
+M	src/lib-smtp/smtp-server-cmd-rcpt.c
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server-recipient.c
+M	src/lib-smtp/smtp-server-transaction.c
+M	src/lib-smtp/smtp-server.h
+M	src/lmtp/lmtp-common.c
+M	src/lmtp/lmtp-common.h
+M	src/lmtp/lmtp-local.c
+M	src/lmtp/lmtp-proxy.c
+
+2018-10-07 21:24:43 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2678b9678)
+
+    submission: Use the recipient index in the server recipient object rather
+    than the submission recipient.
+
+
+M	src/submission/submission-recipient.c
+M	src/submission/submission-recipient.h
+
+2018-10-07 21:23:44 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (9bd0a3890)
+
+    lmtp: Use the recipient index in the server recipient object rather than the
+    lmtp recipient.
+
+
+M	src/lmtp/lmtp-common.c
+M	src/lmtp/lmtp-common.h
+M	src/lmtp/lmtp-local.c
+M	src/lmtp/lmtp-proxy.c
+
+2018-10-07 19:44:40 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (afbe1bdc4)
+
+    submission: Use the path in the server recipient object rather than the
+    submission recipient.
+
+    It is recorded reliably on a pool from the start now
+
+M	src/submission/submission-recipient.c
+M	src/submission/submission-recipient.h
+
+2018-10-07 19:47:59 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (5eea7de82)
+
+    lmtp: Use the path in the server recipient object rather than the lmtp
+    recipient.
+
+    It is recorded reliably on a pool from the start now.
+
+M	src/lmtp/lmtp-common.c
+M	src/lmtp/lmtp-common.h
+M	src/lmtp/lmtp-local.c
+M	src/lmtp/lmtp-proxy.c
+
+2018-10-07 17:47:29 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (5c39ef588)
+
+    submission: Start using the new lib-smtp/server recipient pool.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+M	src/submission/submission-commands.h
+M	src/submission/submission-recipient.c
+M	src/submission/submission-recipient.h
+
+2018-10-07 22:32:38 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (728dd5a94)
+
+    lmtp: Start using the new lib-smtp/server recipient pool.
+
+
+M	src/lmtp/lmtp-common.h
+M	src/lmtp/lmtp-local.c
+M	src/lmtp/lmtp-proxy.c
+
+2018-10-07 21:37:00 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (de44662ed)
+
+    lib-smtp: server: Create the definitive recipient object right at the
+    reception of the RCPT command.
+
+    Before, it first allocated stuff on the command pool, which gets freed when
+    the RCPT command finishes. Allocating the recipient data on its own pool
+    from the start considerably simplifies the code and prevents very nasty
+    bugs.
+
+M	src/lib-smtp/smtp-server-cmd-rcpt.c
+M	src/lib-smtp/smtp-server.h
+M	src/lib-smtp/test-smtp-payload.c
+M	src/lib-smtp/test-smtp-server-errors.c
+M	src/lmtp/commands.c
+M	src/lmtp/commands.h
+M	src/lmtp/lmtp-common.c
+M	src/lmtp/lmtp-common.h
+M	src/lmtp/lmtp-local.c
+M	src/lmtp/lmtp-local.h
+M	src/lmtp/lmtp-proxy.c
+M	src/lmtp/lmtp-proxy.h
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+M	src/submission/submission-commands.h
+
+2018-10-07 21:13:44 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f8fc07fb0)
+
+    lib-smtp: server: Record the index in the list of approved recipients in the
+    recipient object.
+
+    This avoids the need to do that in application code.
+
+M	src/lib-smtp/smtp-server-transaction.c
+M	src/lib-smtp/smtp-server.h
+
+2018-10-07 20:42:20 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (964ab70fa)
+
+    lib-smtp: server: Add hooks API for recipient.
+
+
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server-recipient.c
+M	src/lib-smtp/smtp-server.h
+
+2018-10-07 20:34:12 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (6c939b142)
+
+    lib-smtp: server: Allocate each recipient on its own pool.
+
+    This way, the application can associate data with the recipient, which 
+    implicitly goes away either when the transaction is finished or the
+    recipient is denied.
+
+M	src/lib-smtp/Makefile.am
+M	src/lib-smtp/smtp-server-cmd-rcpt.c
+M	src/lib-smtp/smtp-server-private.h
+A	src/lib-smtp/smtp-server-recipient.c
+M	src/lib-smtp/smtp-server-transaction.c
+M	src/lib-smtp/smtp-server.h
+
+2018-10-08 01:09:26 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (eca454196)
+
+    submission: Rename struct smtp_server_recipient *trcpt variables to *rcpt.
+
+
+M	src/submission/submission-commands.c
+M	src/submission/submission-recipient.c
+M	src/submission/submission-recipient.h
+
+2018-10-08 00:44:28 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (7d88326dc)
+
+    submission: Rename struct submission_recipient *rcpt variables to *srcpt.
+
+
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+M	src/submission/submission-commands.h
+M	src/submission/submission-recipient.c
+M	src/submission/submission-recipient.h
+
+2018-10-07 23:53:11 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (201fe17d5)
+
+    lmtp: Rename struct smtp_server_recipient *trcpt variables to *rcpt.
+
+
+M	src/lmtp/lmtp-common.c
+M	src/lmtp/lmtp-common.h
+M	src/lmtp/lmtp-local.c
+M	src/lmtp/lmtp-proxy.c
+
+2018-03-12 01:22:34 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (29901fb32)
+
+    lmtp: local: Rename struct lmtp_local_recipient *rcpt variables to *llrcpt.
+
+
+M	src/lmtp/lmtp-local.c
+
+2018-03-12 01:12:30 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (d8f8f1342)
+
+    lmtp: proxy: Rename struct lmtp_proxy_recipient *rcpt variables to *lprcpt.
+
+
+M	src/lmtp/lmtp-proxy.c
+
+2018-10-07 23:08:37 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (6e27dce08)
+
+    lmtp: common: Rename struct lmtp_recipient *rcpt variables to *lrcpt.
+
+
+M	src/lmtp/lmtp-common.c
+M	src/lmtp/lmtp-common.h
+
+2018-03-12 03:12:44 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (a2abf87cd)
+
+    lmtp: local: Do not use array_idx() to obtain transaction recipient from
+    lib-smtp.
+
+    It is already available in struct lmtp_recipient. Also, this call was very
+    ugly.
+
+M	src/lmtp/lmtp-local.c
+
+2018-10-07 18:17:28 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (0de66ec4e)
+
+    lmtp: Reformat commands.h.
+
+
+M	src/lmtp/commands.h
+
+2018-10-05 00:26:56 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (ee006535a)
+
+    submission: client: Add API for adding extra (non-standard) capabilities.
+
+
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+
+2018-10-05 00:26:03 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (946a45a94)
+
+    lib-smtp: syntax: Add verification functions for EHLO keywords and
+    parameters.
+
+
+M	src/lib-smtp/smtp-syntax.c
+M	src/lib-smtp/smtp-syntax.h
+
+2018-09-25 02:18:24 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (9be9d7338)
+
+    submission: Add support for module contexts to recipient.
+
+
+M	src/submission/submission-recipient.c
+M	src/submission/submission-recipient.h
+
+2018-05-13 11:33:03 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (3672ffa8e)
+
+    submission: Add support for module contexts to client.
+
+
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-09-16 21:47:10 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (b8998f060)
+
+    submission: Implement client vfuncs for transaction start and free.
+
+
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-09-15 21:47:42 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (83d37361d)
+
+    submission: Implement client vfuncs for all normal SMTP commands.
+
+
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+M	src/submission/submission-commands.h
+
+2018-05-13 11:15:59 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (c1e5881c2)
+
+    submission: Implement basic client vfuncs.
+
+    Currently, only client_destroy can be overriden.
+
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-09-25 02:11:46 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (a9116f626)
+
+    submission: Allocate each recipient object on its own pool.
+
+    This allows allocating per recipient module data.
+
+M	src/submission/submission-recipient.c
+M	src/submission/submission-recipient.h
+
+2018-09-25 01:53:02 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (bb708b562)
+
+    submission: Provide ephemeral pool for transaction state.
+
+
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-09-16 21:15:20 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (ea39afc26)
+
+    submission: Allocate client on alloconly mempool.
+
+
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-09-13 23:30:26 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (53421a654)
+
+    lib-smtp: server: Add proper infrastructure for adding custom MAIL/RCPT
+    command parameters.
+
+
+M	src/lib-smtp/smtp-server-cmd-mail.c
+M	src/lib-smtp/smtp-server-cmd-rcpt.c
+M	src/lib-smtp/smtp-server-connection.c
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server.h
+
+2018-09-16 22:07:16 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f716c910a)
+
+    lib-smtp: params: Add functions for dropping extra MAIL/RCPT parameters.
+
+
+M	src/lib-smtp/smtp-params.c
+M	src/lib-smtp/smtp-params.h
+
+2018-10-03 22:05:10 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (7fc7f0bc0)
+
+    lib-smtp: params: Add functions for adding extra MAIL/RCPT parameters.
+
+
+M	src/lib-smtp/smtp-params.c
+M	src/lib-smtp/smtp-params.h
+
+2018-09-13 22:48:51 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (d9b1b659d)
+
+    lib-smtp: params: Allow only specific custom parameter extensions, rather
+    than any parameter.
+
+    Before the choice was between allowing any extension or none.
+
+M	src/lib-smtp/smtp-params.c
+M	src/lib-smtp/smtp-params.h
+M	src/lib-smtp/smtp-server-cmd-mail.c
+M	src/lib-smtp/smtp-server-cmd-rcpt.c
+M	src/lib-smtp/smtp-server-connection.c
+M	src/lib-smtp/smtp-server.c
+M	src/lib-smtp/smtp-server.h
+M	src/lib-smtp/test-smtp-params.c
+
+2018-09-16 21:55:58 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2038f7938)
+
+    lib-smtp: params: Fix segfault occurring in smtp_param_write() when
+    param->value == NULL.
+
+
+M	src/lib-smtp/smtp-params.c
+
+2018-09-29 04:42:27 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (acd09d8e6)
+
+    submission: relay backend: Use SMTP client transaction API, rather than
+    relaying individual commands.
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-10-01 00:28:06 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (c61148ebe)
+
+    lib-smtp: client: transaction: Add option to submit commands immediately,
+    rather than queueing them on a zero timeout.
+
+    Also, allow interleaving other unrelated (non-transaction) commands. This is 
+    made possible by not locking/plugging the command pipeline.
+
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client-transaction.c
+M	src/lib-smtp/smtp-client-transaction.h
+
+2018-09-29 18:28:29 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (773ab6e70)
+
+    lib-smtp: client: Fully disconnect the connection upon failure before
+    triggering failure callbacks.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-30 00:37:10 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (158a93857)
+
+    lib-smtp: client: transaction: Add support for aborting a pending RCPT
+    command.
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+M	src/lib-smtp/smtp-client-transaction.h
+
+2018-09-30 00:35:26 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (de456551b)
+
+    lib-smtp: client: transaction: Add support for aborting a pending MAIL
+    command.
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+M	src/lib-smtp/smtp-client-transaction.h
+
+2018-09-28 17:59:53 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (87ac47c5d)
+
+    lib-smtp: client: transaction: Add support for creating an empty transaction
+    (without MAIL FROM data).
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+M	src/lib-smtp/smtp-client-transaction.h
+
+2018-09-28 15:44:55 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (29fe17d51)
+
+    lib-smtp: client: transaction: Add support for pipelining more than a single
+    MAIL command.
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+M	src/lib-smtp/smtp-client-transaction.h
+
+2018-09-28 02:10:41 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (e14794f37)
+
+    lib-smtp: client: transaction: Add infrastructure for pipelining more than a
+    single MAIL command.
+
+
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-28 13:39:44 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f103dff51)
+
+    lib-smtp: client: transaction: Rename mail_from_callback/mail_from_context
+    to mail_callback/mail_context.
+
+
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client-transaction.c
+M	src/lib-smtp/smtp-client-transaction.h
+
+2018-09-30 11:50:02 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (5f9be113a)
+
+    lib-smtp: client: transaction: Use linked lists rather than arrays for
+    recipients.
+
+
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-21 00:55:51 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f290899b4)
+
+    lib-smtp: client: transaction: Add support for ending the transaction in a
+    graceful RSET command.
+
+    Allows running the pending transaction until RSET, without abruptly aborting 
+    it or issuing a DATA command.
+
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client-transaction.c
+M	src/lib-smtp/smtp-client-transaction.h
+
+2018-09-30 23:56:57 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (4ba57a4b9)
+
+    lib-smtp: client: transaction: Move initiation of command submission to a
+    central position.
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-28 13:28:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2c58103a9)
+
+    lib-smtp: client: transaction: Perform pipeline plug handling just once at
+    top-level in smtp_client_transaction_submit_more().
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-28 13:17:30 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (60ceb9f1c)
+
+    lib-smtp: client: transaction: Annotate sub-parts of
+    smtp_client_transaction_send_more() with comments.
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-30 23:35:58 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (142cd3710)
+
+    lib-smtp: client: transaction: Move smtp_client_transaction_submit_more().
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-10-02 04:28:10 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (d335022bc)
+
+    lib-smtp: client: transaction: Move initiation of command submission after
+    starting the transaction timeout.
+
+    This is a precaution against the emergence of segfaults when command
+    submission somehow terminates the transaction in a future version (actually,
+    a segfault did emerge in an earlier version of this set of changes). Also it
+    is a cosmetic change: putting the most important act at the end of the
+    function makes more sense in this case.
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-28 13:08:46 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (4cbc847a4)
+
+    lib-smtp: client: transaction: Rename smtp_client_transaction_send_rcpts()
+    to smtp_client_transaction_submit_more().
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-10-01 23:26:18 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (9dc98bc24)
+
+    lib-smtp: client: transaction: Move the code executed at the completion of
+    the transaction to a separate shared function.
+
+    The transaction is complete when all RCPT replies are received and either a
+    DATA or a RSET command is submitted.
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-10-02 21:44:48 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (b8e97b6d7)
+
+    lib-smtp: client: transaction: Don't trigger next transaction unless all
+    RCPT replies are received and DATA is submitted.
+
+    Triggering the next transaction when DATA submitted while not all RCPT
+    replies are received (as it was before) is problematic when commands are
+    submitted immediately by the transaction (which is added in a later commit).
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-29 20:43:20 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (dbbf717ec)
+
+    lib-smtp: client: transaction: Prevent calling callbacks after
+    smtp_client_transaction_destroy().
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-29 21:09:57 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (c0d517b31)
+
+    lib-smtp: client: transaction: Annotate sub-parts of
+    smtp_client_transaction_fail_reply() with comments.
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-29 21:07:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (1c2ff5938)
+
+    lib-smtp: client: transaction: Add debug message for when
+    smtp_client_transaction_abort() is called during
+    smtp_client_transaction_fail*().
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-29 13:19:53 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (1b81cf3cf)
+
+    lib-smtp: client: transaction: Make sure the transaction is finished/aborted
+    after smtp_client_connection_destroy().
+
+    Otherwise, the transaction could be dereferenced several times too often.
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-10-02 00:04:44 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (e8e3cfa75)
+
+    lib-smtp: client: connection: Add debug messages for transaction handling.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-09-29 00:21:05 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (98946ec76)
+
+    lib-smtp: server: RCPT command: Improve replacement of (forwarded) specific
+    error reply with generic state error.
+
+    Predictable transaction state errors were not always replaced reliably when 
+    commands were pipelined, leading to a mix of proxy and remote errors.
+
+M	src/lib-smtp/smtp-server-cmd-rcpt.c
+
+2018-09-29 00:20:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (84b4c8b73)
+
+    lib-smtp: server: MAIL command: Improve replacement of (forwarded) specific
+    error reply with generic state error.
+
+    Predictable transaction state errors were not always replaced reliably when 
+    commands were pipelined, leading to a mix of proxy and remote errors.
+
+M	src/lib-smtp/smtp-server-cmd-mail.c
+
+2018-09-29 00:19:05 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (cc8a27bb4)
+
+    lib-smtp: server: Add ability to determine whether command reply was created
+    using smtp_server_reply_create_forward().
+
+
+M	src/lib-smtp/smtp-server-command.c
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server-reply.c
+M	src/lib-smtp/smtp-server.h
+
+2018-09-27 22:16:56 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (31a0528c1)
+
+    lib-smtp: server: MAIL command: Reliably start the transaction when several
+    MAIL commands are pipelined.
+
+
+M	src/lib-smtp/smtp-server-cmd-mail.c
+
+2018-09-29 20:54:03 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (bd8ee0b86)
+
+    lib-smtp: client: Properly manage command timeout during transaction.
+
+
+M	src/lib-smtp/smtp-client-command.c
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-09-29 15:31:58 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (56e3227cc)
+
+    lib-smtp: client: transaction: Set the number of expected DATA replies > 1
+    only for LMTP.
+
+    This was already OK for when all recipients were added at the time the data 
+    command was to be sent. However, for more dynamic transactions involving 
+    pipelining, this was not handled correctly.
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-09-29 15:31:14 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2858e16dd)
+
+    lib-smtp: client: Clear command callback early to prevent mishaps.
+
+
+M	src/lib-smtp/smtp-client-command.c
+
+2018-09-29 20:39:28 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (639692a98)
+
+    lib-smtp: client: Add smtp_client_command_drop_callback().
+
+
+M	src/lib-smtp/smtp-client-command.c
+M	src/lib-smtp/smtp-client-private.h
+
+2018-09-29 20:38:44 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (025f75285)
+
+    lib-smtp: client: Fix memory issue caused when reconnecting.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib/connection.c
+
+2018-09-20 22:33:23 +0300 Phil Carmody <phil@dovecot.fi> (2687917d5)
+
+    lib-fts: replace repeated explicit hex utf8 with cleaner macro in tokeniser
+    test
+
+    utf8 is too line-noisy, this improves readability.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/test-fts-tokenizer.c
+
+2018-05-16 18:08:01 +0300 Phil Carmody <phil@dovecot.fi> (a0fc10ba3)
+
+    lib-fts: tokenizer-generic - tr29 explicit-prefix parsing
+
+    Similar logic to before - any wordlike sequence that ends with a * is 
+    considered a prefix search, and immediately begins a new token.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-tokenizer-generic.c
+M	src/lib-fts/test-fts-tokenizer.c
+
+2018-04-28 15:33:28 +0300 Phil Carmody <phil@dovecot.fi> (4ae7e343d)
+
+    lib-fts: test-fts-tokenizer - explicit-prefix tests
+
+    Note that the special handling of '*' only kicks in when in
+    "search" and "explicitprefix" mode (as passed in through the settings), and
+    currently, only for the simple mode, not tr29.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/test-fts-tokenizer.c
+
+2018-05-16 17:57:14 +0300 Phil Carmody <phil@dovecot.fi> (6e545c501)
+
+    lib-fts: tokenizer-generic - simple explicit prefix search logic
+
+    Logic is that words followed by a '*' create a prefix search token. A new
+    token is begun immediately after that. So "foo*bar" is 2 tokens
+    "foo*" and "bar", when in explicit prefix search tokenisation mode.
+
+    Only active in 'simple', not 'tr29'.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-common.h
+M	src/lib-fts/fts-tokenizer-generic-private.h
+M	src/lib-fts/fts-tokenizer-generic.c
+
+2018-05-16 17:37:29 +0300 Phil Carmody <phil@dovecot.fi> (64baaac55)
+
+    lib-fts: tokenizer-generic - add more history to break detection
+
+    For example, going from non-word to non-word is a different type of break
+    (not really a break) from the transition from a word to a non-word.
+    Presently, that distinction isn't needed, but it will be for explicit prefix
+    searches.
+
+    Make the tok parameter const too, whilst there.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-tokenizer-generic.c
+
+2018-05-16 16:32:35 +0300 Phil Carmody <phil@dovecot.fi> (1bc83feaf)
+
+    lib-fts: tokenizer-generic - recognise request for explicit prefix searching
+
+    Just store a flag in the tokenizer when the setting is seen, nothing more.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-tokenizer-generic-private.h
+M	src/lib-fts/fts-tokenizer-generic.c
+
+2018-04-28 12:30:49 +0300 Phil Carmody <phil@dovecot.fi> (3a35b9c67)
+
+    lib-fts/test-fts-tokenizer - have different possible test inputs
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/test-fts-tokenizer.c
+
+2018-05-11 13:34:40 +0300 Phil Carmody <phil@dovecot.fi> (6d292e2a1)
+
+    lib-fts: generic simple tokeniser - distinguish "letters" from non-"letters"
+
+    prev_type is only compared against SINGLE_QUOTE, so there will be no 
+    behavioural differences. However, maintaining the state that we've just seen
+    something we are prepared to search for (very loosely, a "letter") rather
+    than something that we threw away (word breaks) will be important when it
+    comes to explicit prefix query parsing.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-tokenizer-generic.c
+
+2018-05-16 17:11:27 +0300 Phil Carmody <phil@dovecot.fi> (075746288)
+
+    lib-fts: tokenizer-generic - move related helpers together in file
+
+    They're logically related, and not specifically simple or tr29 related, so
+    keep them together, so either tokeniser can use them. Cosmetic only, no
+    functional changes.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-tokenizer-generic.c
+
+2018-05-16 17:04:35 +0300 Phil Carmody <phil@dovecot.fi> (2449c3311)
+
+    lib-fts: tokenizer-generic - move state history setting into helper
+
+    We can read the value directly, but for encapsulation it's best to do the
+    shifting of the token type history into a helper in a similar way as how it
+    is done for tr29 tokenising.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-tokenizer-generic.c
+
+2018-04-28 15:46:54 +0300 Phil Carmody <phil@dovecot.fi> (f87e656ba)
+
+    lib-fts/fts-tokenizer-generic - rename more state variables - cosmetic
+
+    No need for a suffix now we've renamed the type variables. Patch best viewed
+    with: git show --color-words='[[:alnum:]_]+'
+
+    Unfortunately this is very churny, but there are no functional changes.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-tokenizer-generic-private.h
+M	src/lib-fts/fts-tokenizer-generic.c
+
+2018-04-28 15:38:06 +0300 Phil Carmody <phil@dovecot.fi> (fcfc2adf2)
+
+    lib-fts/fts-tokenizer-generic - rename state variables - cosmetic
+
+    These contain types, not letters, no functional changes.
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-tokenizer-generic-private.h
+M	src/lib-fts/fts-tokenizer-generic.c
+
+2018-04-26 16:57:11 +0300 Phil Carmody <phil@dovecot.fi> (a12124c12)
+
+    lib-fts/fts-tokeniser-generic: move to container_of() for type-safety
+
+    Signed-off-by: Phil Carmody <phil@dovecot.fi>
+
+M	src/lib-fts/fts-tokenizer-generic.c
+
+2018-09-15 18:15:36 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (afe275f02)
+
+    submission: backends: Add trans_start() and trans_free() vfuncs.
+
+    These are called when the SMTP transaction is started and freed
+    respectively.
+
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+M	src/submission/submission-client.c
+M	src/submission/submission-commands.c
+
+2018-09-15 18:04:33 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (d61d01615)
+
+    submission: Record backend used for each recipient.
+
+    This is a preparation for plugins overriding the default backend for a
+    recipient.
+
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+M	src/submission/submission-recipient.c
+M	src/submission/submission-recipient.h
+
+2018-09-15 17:33:03 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (1e42c123e)
+
+    submission: Record main backend for the transaction.
+
+    This is a preparation for plugins overriding the default backend for a
+    transaction.
+
+M	src/submission/submission-backend.c
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+
+2018-10-04 21:56:20 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (d6299811e)
+
+    submission: DATA command: Pass the total size of the data stream to the
+    backend.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+M	src/submission/submission-commands.c
+
+2018-10-04 21:01:44 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (b8297f4e9)
+
+    submission: DATA command: Obtain the size of the buffered data from the
+    stream position rather than using i_stream_get_size().
+
+
+M	src/submission/submission-commands.c
+
+2018-09-15 16:01:59 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (9c18f8f35)
+
+    submission: relay backend: Use backend-specific settings rather than the
+    generic submission service settings.
+
+    This way, several relay backends can be operated together with different 
+    settings.
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-09-15 15:46:34 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (0f6823a93)
+
+    submission: relay backend: Make struct submission_backend_relay private.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+
+2018-09-15 15:29:40 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (59fcfb6da)
+
+    submission: relay backend: Turn client_proxy_create() into a proper backend
+    constructor.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-09-15 15:13:32 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (17673c8ba)
+
+    submission: relay backend: Turn client_get_max_mail_size() into a relay
+    backend vfunc.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-09-15 14:44:41 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (0e9ae1d77)
+
+    submission: relay backend: Turn client_proxy_input_pre/post() into relay
+    backend vfuncs.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-09-15 14:35:10 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (9f0ecc5db)
+
+    submission: relay backend: Turn client_proxy_start() into a relay backend
+    vfunc.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-09-15 14:25:38 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (554ef3864)
+
+    submission: relay backend: Turn client_proxy_destroy() into a relay backend
+    vfunc.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-09-15 13:53:07 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (877917d90)
+
+    submission: relay backend: Turn SMTP command functions into relay backend
+    vfuncs.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-commands.c
+
+2018-09-15 14:08:57 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (4eb24edcc)
+
+    submission: client: Create default backend in a separate function.
+
+
+M	src/submission/submission-backend.c
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-09-15 13:02:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (543b5df06)
+
+    submission: Define generic backend API.
+
+
+M	src/submission/Makefile.am
+A	src/submission/submission-backend.c
+M	src/submission/submission-backend.h
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-10-04 01:37:24 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (7d9135587)
+
+    submission: Add submission_backend_capabilities setting.
+
+    This can be used to specify which capabilities the (relay) backend supports, 
+    avoiding the need to query the backend explicitly before the EHLO reply is
+    sent to the client.
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+M	src/submission/submission-settings.c
+M	src/submission/submission-settings.h
+
+2018-10-04 21:39:58 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (5404598cd)
+
+    submission: commands: Expect connection setup errors from relaying commands.
+
+    Subsequent changes remove the guarantee that the connection is setup
+    successfuly
+    (to gain EHLO capabilities) before commands are submitted. This means that
+    the callbacks from commands can thereafter return connection setup errors as
+    well.
+
+M	src/submission/submission-backend-relay.c
+
+2018-09-26 21:44:35 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (0bf65f74a)
+
+    lib-smtp: client: Use the new smtp_capability_find_by_name() function.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-09-26 21:36:01 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f01f739ba)
+
+    lib-smtp: client: Document the forced_capabilities setting.
+
+
+M	src/lib-smtp/smtp-client.h
+
+2018-09-26 21:32:45 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (984193119)
+
+    lib-smtp: Add utility function for finding capabilities by name.
+
+
+M	src/lib-smtp/smtp-common.c
+M	src/lib-smtp/smtp-common.h
+
+2018-09-15 15:02:20 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (61dc9570e)
+
+    submission: client: Simplifly calculation of max mail size.
+
+
+M	src/submission/submission-client.c
+
+2018-09-15 13:17:11 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (3bf48cb7c)
+
+    submission: Record accepted recipients in the client object.
+
+    Allows associating context with recipients in future changes.
+
+M	src/submission/Makefile.am
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+A	src/submission/submission-recipient.c
+A	src/submission/submission-recipient.h
+
+2018-07-15 22:37:13 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (640d87e05)
+
+    submission: Reformat submission-backend-relay.c.
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-07-15 21:42:17 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (0532a68b1)
+
+    submission: relay backend: Change almost all occurrences of 'proxy' to
+    'relay'.
+
+    This makes the naming consistent with the name of the backend. Only the
+    lib-smtp proxy_data is not renamed.
+
+M	src/submission/submission-backend-relay.c
+
+2018-07-15 21:27:48 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (161979d77)
+
+    submission: relay backend: Rename client_command_handle_proxy_reply() to
+    backend_relay_handle_relay_reply().
+
+    Also make it accept the backend rather than the client struct.
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-commands.h
+
+2018-07-15 20:56:47 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (195b1df4a)
+
+    submission: relay backend: Rename *_proxy_cb() to *_callback().
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-07-15 21:10:39 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (28e2f2401)
+
+    submission: relay backend: Add 'relay_' prefix to command functions and
+    structs.
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-07-15 20:35:45 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (a8a4903e0)
+
+    submission: relay backend: Use pointer to backend rather than client in
+    command contexts.
+
+
+M	src/submission/submission-backend-relay.c
+
+2018-07-15 20:49:05 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (6c5a5e82c)
+
+    submission: Move relay-related client fields to separate backend struct.
+
+
+M	src/submission/Makefile.am
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+A	src/submission/submission-backend.h
+M	src/submission/submission-client.h
+M	src/submission/submission-commands.c
+
+2018-09-02 17:10:19 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (275b6a786)
+
+    submission: Move client_proxy_get_max_mail_size() to
+    submission-backend-relay.c.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-09-02 16:05:28 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (7d11f8903)
+
+    submission: Move client_proxy_input_pre/post() to
+    submission-backend-relay.c.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-09-02 15:29:24 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (646f09315)
+
+    submission: Move client_proxy_destroy() to submission-backend-relay.c.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-07-15 22:02:37 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (4b54307fb)
+
+    submission: Move client_proxy_create() to submission-backend-relay.c.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-09-01 16:40:10 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (453b47c59)
+
+    submission: Move client_proxy_start() to submission-backend-relay.c.
+
+
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-client.c
+
+2018-09-02 17:04:14 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (46d8457c6)
+
+    submission: Split off obtaining the relay connection capabilities into a
+    separate function.
+
+
+M	src/submission/submission-client.c
+
+2018-09-02 15:44:33 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (8c319c7a4)
+
+    submission: Split off corking and uncorking the relay connection in a
+    separate function.
+
+
+M	src/submission/submission-client.c
+
+2018-09-02 15:10:08 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (e7617d8ff)
+
+    submission: Split off closing the relay connection in a separate function.
+
+
+M	src/submission/submission-client.c
+
+2018-09-01 15:51:01 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (8d8725937)
+
+    submission: Split off starting the relay connection in a separate function.
+
+
+M	src/submission/submission-client.c
+
+2018-07-15 19:54:06 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (84191f491)
+
+    submission: Remove client_proxy_is_disconnected().
+
+    It is not used anywhere.
+
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-07-15 19:52:41 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (a47cf1f11)
+
+    submission: Remove client_proxy_is_ready().
+
+    It is not used anywhere.
+
+M	src/submission/submission-client.c
+M	src/submission/submission-client.h
+
+2018-08-30 00:26:03 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (85f0f33c5)
+
+    submission: Move relay part of QUIT command to submission-backend-relay.c.
+
+
+M	src/submission/Makefile.am
+D	src/submission/cmd-quit.c
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-commands.h
+
+2018-08-30 00:21:59 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (310f56832)
+
+    submission: Move generic part of QUIT command to submission-commands.c.
+
+
+M	src/submission/cmd-quit.c
+M	src/submission/submission-commands.c
+
+2018-07-15 19:06:34 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (a9a0f6ace)
+
+    submission: Move relay part of NOOP command to submission-backend-relay.c.
+
+
+M	src/submission/Makefile.am
+D	src/submission/cmd-noop.c
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-commands.h
+
+2018-08-29 23:51:09 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (726c88353)
+
+    submission: Move generic part of NOOP command to submission-commands.c.
+
+
+M	src/submission/cmd-noop.c
+M	src/submission/submission-commands.c
+
+2018-09-10 01:07:58 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f53bb2ac1)
+
+    submission: Move relay part of VRFY command to submission-backend-relay.c.
+
+
+M	src/submission/Makefile.am
+D	src/submission/cmd-vrfy.c
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-commands.h
+
+2018-08-29 23:37:25 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (47bb64135)
+
+    submission: Move generic part of VRFY command to submission-commands.c.
+
+
+M	src/submission/cmd-vrfy.c
+M	src/submission/submission-commands.c
+
+2018-07-15 19:38:11 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (5168a6838)
+
+    submission: Move BURL command implementation to submission-commands.c.
+
+
+M	src/submission/Makefile.am
+D	src/submission/cmd-data.c
+M	src/submission/submission-commands.c
+
+2018-07-15 19:03:09 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2dbb36ce5)
+
+    submission: Move relay part of DATA command to submission-backend-relay.c.
+
+
+M	src/submission/cmd-data.c
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-commands.h
+
+2018-08-30 00:59:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (d616e0edb)
+
+    submission: Move generic part of DATA command to submission-commands.c.
+
+
+M	src/submission/cmd-data.c
+M	src/submission/submission-commands.c
+
+2018-07-15 19:00:11 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (353f551eb)
+
+    submission: Move relay part of RSET command to submission-backend-relay.c.
+
+
+M	src/submission/Makefile.am
+D	src/submission/cmd-rset.c
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-commands.h
+
+2018-08-29 23:33:11 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (85ad60b78)
+
+    submission: Move generic part of RSET command to submission-commands.c.
+
+
+M	src/submission/cmd-rset.c
+M	src/submission/submission-commands.c
+
+2018-08-29 22:45:00 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (52da00861)
+
+    submission: Move relay part of RCPT command to submission-backend-relay.c.
+
+
+M	src/submission/Makefile.am
+D	src/submission/cmd-rcpt.c
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-commands.h
+
+2018-08-29 23:30:31 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (76f7ac4d5)
+
+    submission: Move generic part of RCPT command to submission-commands.c.
+
+
+M	src/submission/cmd-rcpt.c
+M	src/submission/submission-commands.c
+
+2018-07-15 18:57:26 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (aaedb98d6)
+
+    submission: Move relay part of MAIL command to submission-backend-relay.c.
+
+
+M	src/submission/Makefile.am
+D	src/submission/cmd-mail.c
+M	src/submission/submission-backend-relay.c
+M	src/submission/submission-backend-relay.h
+M	src/submission/submission-commands.h
+
+2018-08-29 23:25:32 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f65b6d84a)
+
+    submission: Move generic part of MAIL command to submission-commands.c.
+
+
+M	src/submission/cmd-mail.c
+M	src/submission/submission-commands.c
+
+2018-07-15 18:54:00 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (baa1ecb27)
+
+    submission: Move relay part of HELO/EHLO command to
+    submission-backend-relay.c.
+
+
+M	src/submission/Makefile.am
+D	src/submission/cmd-helo.c
+M	src/submission/submission-backend-relay.c
+A	src/submission/submission-backend-relay.h
+M	src/submission/submission-commands.c
+M	src/submission/submission-commands.h
+
+2018-09-01 13:34:53 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (61eaa9823)
+
+    submission: Move generic part of HELO/EHLO command to submission-commands.c.
+
+
+M	src/submission/cmd-helo.c
+M	src/submission/submission-commands.c
+
+2018-08-30 00:18:40 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (0a408b1e4)
+
+    submission: Split the QUIT command into a generic part and a part related to
+    relaying to an MTA.
+
+
+M	src/submission/cmd-quit.c
+M	src/submission/submission-commands.h
+
+2018-08-29 23:43:43 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (c6efca708)
+
+    submission: Split the NOOP command into a generic part and a part related to
+    relaying to an MTA.
+
+
+M	src/submission/cmd-noop.c
+M	src/submission/submission-commands.h
+
+2018-08-29 22:37:27 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (743c5e716)
+
+    submission: Split the VRFY command into a generic part and a part related to
+    relaying to an MTA.
+
+
+M	src/submission/cmd-vrfy.c
+M	src/submission/submission-commands.h
+
+2018-08-28 01:58:58 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (d574b79d2)
+
+    submission: Split the DATA command into a generic part and a part related to
+    relaying to an MTA.
+
+
+M	src/submission/cmd-data.c
+M	src/submission/submission-commands.h
+
+2018-08-29 22:30:51 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (60f68f6db)
+
+    submission: Split the RSET command into a generic part and a part related to
+    relaying to an MTA.
+
+
+M	src/submission/cmd-rset.c
+M	src/submission/submission-commands.h
+
+2018-08-29 22:27:12 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (20f1717ae)
+
+    submission: Split the RCPT command into a generic part and a part related to
+    relaying to an MTA.
+
+
+M	src/submission/cmd-rcpt.c
+M	src/submission/submission-commands.h
+
+2018-08-29 22:25:18 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (62edb8ef8)
+
+    submission: Split the MAIL command into a generic part and a part related to
+    relaying to an MTA.
+
+
+M	src/submission/cmd-mail.c
+M	src/submission/submission-commands.h
+
+2018-09-01 13:30:34 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f6a03d196)
+
+    submission: Split the EHLO command into a generic part and a part related to
+    relaying to an MTA.
+
+
+M	src/submission/cmd-helo.c
+M	src/submission/submission-commands.h
+
+2018-08-27 20:15:40 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2e3ba497e)
+
+    submission: Move submission_helo_reply_submit() from cmd-helo.c to
+    submission-commands.c.
+
+
+M	src/submission/cmd-helo.c
+M	src/submission/submission-commands.c
+
+2018-08-27 19:46:21 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (54ebd8cf5)
+
+    submission: Make HELO/EHLO reply submission a separate public function.
+
+
+M	src/submission/cmd-helo.c
+M	src/submission/submission-commands.h
+
+2018-07-15 19:10:36 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (186c8b0c7)
+
+    submission: Move client_command_handle_proxy_reply() to
+    submission-backend-relay.c.
+
+
+M	src/submission/Makefile.am
+A	src/submission/submission-backend-relay.c
+M	src/submission/submission-commands.c
+
+2018-09-15 18:33:30 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (abb0ef1f5)
+
+    submission: client: Remove spurious forward declaration of "struct
+    client_command_context".
+
+
+M	src/submission/submission-client.h
+
+2018-09-15 21:06:07 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (56117870f)
+
+    lib-smtp: client: Add forward declaration for struct smtp_client_settings in
+    smtp-client-connection.h.
+
+
+M	src/lib-smtp/smtp-client-connection.h
+
+2018-09-12 21:21:09 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (88f0f045d)
+
+    lib-smtp: server: Drop pending commands and transaction at disconnect rather
+    than destroy.
+
+    This makes sure the conn_trans_free() connection callback is called before 
+    th conn_disconnect() callback. This makes more sense than the other way
+    around, which instead would be a likely cause for mishaps causing segfaults
+    and the like.
+
+M	src/lib-smtp/smtp-server-connection.c
+
+2018-09-02 23:26:21 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (8195dee0a)
+
+    lib-smtp: server: Add callback for transaction start.
+
+
+M	src/lib-smtp/smtp-server-cmd-mail.c
+M	src/lib-smtp/smtp-server.h
+
+2018-07-18 00:51:56 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (a877a6897)
+
+    lib-smtp: server: Change command hooks API to allow many parallel hooks with
+    individual context.
+
+    This e.g. allows many server plugins to hook into command execution without 
+    interfering with eachother.
+
+M	src/lib-smtp/smtp-server-cmd-auth.c
+M	src/lib-smtp/smtp-server-cmd-data.c
+M	src/lib-smtp/smtp-server-cmd-helo.c
+M	src/lib-smtp/smtp-server-cmd-mail.c
+M	src/lib-smtp/smtp-server-cmd-rcpt.c
+M	src/lib-smtp/smtp-server-cmd-rset.c
+M	src/lib-smtp/smtp-server-cmd-starttls.c
+M	src/lib-smtp/smtp-server-cmd-xclient.c
+M	src/lib-smtp/smtp-server-command.c
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server.h
+M	src/lib-smtp/test-smtp-server-errors.c
+M	src/lmtp/commands.c
+M	src/lmtp/lmtp-local.c
+M	src/lmtp/lmtp-proxy.c
+M	src/submission-login/submission-proxy.c
+M	src/submission/cmd-data.c
+M	src/submission/cmd-helo.c
+M	src/submission/cmd-mail.c
+M	src/submission/cmd-noop.c
+M	src/submission/cmd-quit.c
+M	src/submission/cmd-rcpt.c
+M	src/submission/cmd-rset.c
+M	src/submission/cmd-vrfy.c
+
+2019-01-16 01:00:22 +0200 Timo Sirainen <timo.sirainen@open-xchange.com> (f53edc22e)
+
+    LAYOUT=index: Fix rebuilding mailbox list index on force-resync
+
+    The if-check was a bit confusing because have_backend==TRUE means that there 
+    the mailbox list index is only an index, while have_backend==FALSE means 
+    that the mailbox list index is the only source for the list of mailboxes
+    (= list index is the backend).
+
+M	src/lib-storage/list/mailbox-list-index.c
+
+2019-01-07 20:08:26 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (647dfe014)
+
+    push-notification-driver-lua: Request flags and keywords
+
+
+M	src/plugins/push-notification/push-notification-driver-lua.c
+
+2019-01-07 19:54:56 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (a869cbebc)
+
+    push-notification-driver-lua: Fix comment typo
+
+
+M	src/plugins/push-notification/push-notification-driver-lua.c
+
+2019-01-07 20:01:21 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (16ec8eb61)
+
+    push-notification-driver-lua: Add keywords and flags to MessageAppend event
+
+
+M	src/plugins/push-notification/push-notification-driver-lua.c
+
+2019-01-07 19:49:20 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (982c77d2d)
+
+    push-notification-driver-lua: Add keywords and flags to MessageNew event
+
+
+M	src/plugins/push-notification/push-notification-driver-lua.c
+
+2019-01-07 19:48:11 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (e0236ca0f)
+
+    push-notification-driver-lua: Rename keywords_set and keywors_clear to
+    keywords
+
+    This is more concince since these are the keywords being operated on.
+
+M	src/plugins/push-notification/push-notification-driver-lua.c
+
+2019-01-07 19:47:14 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (7e839e003)
+
+    push-notification-driver-lua: Push keywords in helper function
+
+
+M	src/plugins/push-notification/push-notification-driver-lua.c
+
+2019-01-07 19:42:39 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (142e3e5cc)
+
+    push-notification-driver-lua: Push mail flags as array of flags
+
+
+M	src/plugins/push-notification/push-notification-driver-lua.c
+
+2019-01-07 20:00:07 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (5695b91a1)
+
+    push-notification: Add flags and keywords to MessageAppend event
+
+
+M	src/plugins/push-notification/push-notification-event-messageappend.c
+M	src/plugins/push-notification/push-notification-event-messageappend.h
+
+2019-01-07 19:33:28 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (13ef953f4)
+
+    push-notification: Add flags and keywords to MessageNew event
+
+
+M	src/plugins/push-notification/push-notification-event-message-common.h
+M	src/plugins/push-notification/push-notification-event-messagenew.c
+M	src/plugins/push-notification/push-notification-event-messagenew.h
+
+2019-01-11 09:55:25 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (c3e95b3e9)
+
+    m4: Remove unneeded else case from want_lz4
+
+    This causes extraneous code in configure causing it to fail
+
+M	m4/want_lz4.m4
+
+2019-01-11 09:37:51 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (aed205056)
+
+    m4: Replace some if tests with AS_IF
+
+    Fixes configure on older systems
+
+M	m4/want_bzlib.m4
+M	m4/want_lz4.m4
+M	m4/want_lzma.m4
+
+2019-01-11 09:37:42 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (81541bd24)
+
+    m4: Remove stray comma from want_lua.m4
+
+
+M	m4/want_lua.m4
+
+2019-01-11 09:37:02 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (8ba7c1a3d)
+
+    m4: Remove stray AC_ARG_WITH from arc4random.m4
+
+
+M	m4/arc4random.m4
+
+2018-12-12 16:21:29 +0200 Sergey Kitov <sergey.kitov@open-xchange.com> (17b269483)
+
+    log: Use failure context log_prefix when available as prefix for error.
+
+    Current behaviour hides log prefix when seeing errors via doveadm log 
+    errors, this commit will fix it.
+
+M	src/log/log-connection.c
+
+2018-12-13 11:30:06 +0200 Martti Rannanjärvi <martti.rannanjarvi@open-xchange.com> (c42b1d687)
+
+    auth: Fix auth-policy log-only warning whitespace
+
+
+M	src/auth/auth-policy.c
+
+2018-12-04 13:42:44 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (8157ce4fa)
+
+    auth: Add auth_policy_log_only setting
+
+    When auth_policy_log_only=yes, only log what would have been done.
+
+M	src/auth/auth-policy.c
+M	src/auth/auth-request.c
+M	src/auth/auth-settings.c
+M	src/auth/auth-settings.h
+
+2018-12-04 13:42:04 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (825c47c1e)
+
+    auth: Treat all negative responses from policy servers as drops
+
+    Otherwise negative responses that are not -1 are considered as success,
+    which is wrong.
+
+M	src/auth/auth-request.c
+
+2018-12-04 13:41:20 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (54105bdf6)
+
+    auth: Log policy decisions clearly
+
+
+M	src/auth/auth-request.c
+
+2018-12-11 20:28:33 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (1eeb837f5)
+
+    lib-storage: Fix mail_get_headers() API comment
+
+
+M	src/lib-storage/mail-storage.h
+
+2018-12-04 11:19:23 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (b96cc9928)
+
+    lib-storage: Fix error handling if mailbox list index refresh fails
+
+    The caller expects the error to be in mail_storage, not mailbox_list.
+
+M	src/lib-storage/list/mailbox-list-index-status.c
+
+2018-12-03 15:43:06 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (1f9bb8878)
+
+    maildir: Don't crash with zlib plugin when saving is aborted
+
+    The ostream can be finished even if the saving had already failed. It gets 
+    deleted anyway.
+
+    Fixes: Panic: file ostream-zlib.c: line 37 (o_stream_zlib_close): assertion
+    failed: (zstream->ostream.finished || zstream->ostream.ostream.stream_errno
+    != 0 || zstream->ostream.error_handling_disabled)
+
+M	src/lib-storage/index/maildir/maildir-save.c
+
+2018-12-03 15:59:13 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (d83ff884d)
+
+    login-proxy: Fix potential crash for delayed disconnects
+
+    This happens only with login_proxy_max_disconnect_delay.
+
+    Fixes: Panic: file ioloop.c: line 86 (io_add): assertion failed: (fd >= 0)
+
+M	src/login-common/login-proxy.c
+
+2018-12-04 00:16:47 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (5494f652d)
+
+    lib-smtp: client: Prevent sending an empty XCLIENT command when the first
+    parameter is long.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-11-29 13:12:28 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (facfea299)
+
+    lib: event - Add event_set_log_prefix_callback
+
+    Fetch prefix using a callback.
+
+M	src/lib/event-log.c
+M	src/lib/lib-event-private.h
+M	src/lib/lib-event.c
+M	src/lib/lib-event.h
+M	src/lib/test-event-log.c
+
+2018-11-29 16:28:23 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (ecfce734f)
+
+    lib: Fix failure_context.log_prefix_type_pos handling
+
+    The log type string was inserted into wrong location if there were multiple 
+    log prefixes.
+
+M	src/lib/failures.c
+
+2018-11-28 14:13:54 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (2afabefe0)
+
+    lib-storage: Remove MAILBOX_FEATURE_QRESYNC
+
+    This is an imap-specific feature, which doesn't need to be visible in the
+    lib-storage layer.
+
+M	src/imap/imap-client.c
+M	src/lib-storage/mail-storage.h
+
+2018-11-28 14:12:57 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (a4cee4ff2)
+
+    imap: Add support for ENABLE extensions
+
+    Based on patch by Aki Tuomi
+
+M	src/imap/imap-client.c
+M	src/imap/imap-client.h
+M	src/imap/imap-feature.c
+M	src/imap/imap-feature.h
+M	src/imap/main.c
+
+2018-11-28 14:02:44 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (c20a65bf3)
+
+    imap: Change state import/export to use full feature string names
+
+    Single letter IDs wouldn't allow extensions.
+
+M	src/imap/imap-state.c
+
+2018-11-29 10:01:36 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (1631bb342)
+
+    imap: Add client_enabled_features()
+
+    This simplifies the following commits.
+
+M	src/imap/imap-client.c
+M	src/imap/imap-client.h
+
+2018-11-28 13:19:02 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (c3538af44)
+
+    imap: Cleanup - Change client_enable() to return void
+
+    Nothing cares about its return value. With the current features it's not
+    even possible to fail. Possibly mailbox_enable() should be also changed to
+    return void in the future.
+
+M	src/imap/cmd-enable.c
+M	src/imap/cmd-select.c
+M	src/imap/cmd-store.c
+M	src/imap/imap-client.c
+M	src/imap/imap-client.h
+M	src/imap/imap-fetch.c
+M	src/imap/imap-search.c
+M	src/imap/imap-status.c
+
+2018-11-28 13:17:39 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (b64faf8ac)
+
+    imap: Add and use imap_feature_lookup()
+
+    This simplifies the following commits.
+
+M	src/imap/Makefile.am
+M	src/imap/cmd-enable.c
+A	src/imap/imap-feature.c
+A	src/imap/imap-feature.h
+
+2018-11-28 12:50:51 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (bdd22275b)
+
+    imap: Add and use client_enabled_mailbox_features()
+
+    This simplifies the following commits.
+
+M	src/imap/cmd-notify.c
+M	src/imap/cmd-select.c
+M	src/imap/imap-client.c
+M	src/imap/imap-client.h
+M	src/imap/imap-commands-util.c
+M	src/imap/imap-state.c
+M	src/imap/imap-status.c
+
+2018-11-28 12:48:47 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (24dfb1808)
+
+    imap: Cleanup - don't avoid calling mailbox_enable(box, 0)
+
+    This simplifies the following changes. mailbox_enable() is an efficient 
+    function and it doesn't mind being called with features=0 parameter.
+
+M	src/imap/cmd-notify.c
+M	src/imap/cmd-select.c
+M	src/imap/imap-commands-util.c
+M	src/imap/imap-state.c
+M	src/imap/imap-status.c
+
+2018-11-28 12:44:48 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (b4f8a6c2c)
+
+    imap: Add and use client_has_enabled() wrapper
+
+    This simplifies the following commits.
+
+M	src/imap/cmd-fetch.c
+M	src/imap/cmd-select.c
+M	src/imap/cmd-store.c
+M	src/imap/imap-client.c
+M	src/imap/imap-client.h
+M	src/imap/imap-notify.c
+M	src/imap/imap-state.c
+M	src/imap/imap-sync.c
+
+2018-11-28 12:42:55 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (e40ceb2d4)
+
+    imap: client_enable() API change - enable features one at a time
+
+    This simplifies the following commits.
+
+M	src/imap/cmd-enable.c
+M	src/imap/imap-client.c
+M	src/imap/imap-client.h
+
+2018-11-28 12:26:33 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (bbae1b376)
+
+    imap: Access enabled features via new imap_client_feature_* variables
+
+    This simplifies the following commits.
+
+M	src/imap/cmd-enable.c
+M	src/imap/cmd-fetch.c
+M	src/imap/cmd-select.c
+M	src/imap/cmd-store.c
+M	src/imap/imap-client.c
+M	src/imap/imap-client.h
+M	src/imap/imap-fetch.c
+M	src/imap/imap-notify.c
+M	src/imap/imap-search.c
+M	src/imap/imap-state.c
+M	src/imap/imap-status.c
+M	src/imap/imap-sync.c
+
+2018-11-29 10:19:38 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (184165f59)
+
+    m4: dovecot.m4 - Bump serial
+
+
+M	m4/dovecot.m4
+
+2018-11-26 12:45:52 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (3ecf90cb8)
+
+    m4: dovecot.m4 - Improve CC_CLANG
+
+
+M	m4/dovecot.m4
+
+2018-11-26 12:38:25 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (f72561fcd)
+
+    m4: dovecot.m4 - Call CC_CLANG before DC_DOVECOT_CFLAGS
+
+    So we know if we are using clang compiler
+
+M	m4/dovecot.m4
+
+2018-11-24 20:35:53 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (2d2c5be30)
+
+    dovecot.m4: Preserve original CFLAGS/LDFLAGS
+
+    Correct flags are detected during configure, so avoid overwriting them here
+    by accident.
+
+M	m4/dovecot.m4
+
+2018-11-24 20:09:26 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (069c86d9a)
+
+    dovecot.m4: Use _DC_EOF instead of EOF
+
+    Avoids messing with other scripts
+
+M	m4/dovecot.m4
+
+2018-11-24 20:08:51 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (d87ed6e35)
+
+    dovecot.m4: Use AS_IF macro instead of if
+
+    It's safer with m4
+
+M	m4/dovecot.m4
+
+2018-11-24 19:59:04 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (57d05a297)
+
+    dovecot.m4: Call DC_DOVECOT_CFLAGS and HARDENING earlier
+
+    Before SUBST
+
+M	m4/dovecot.m4
+
+2018-11-24 19:58:18 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (83bd255b0)
+
+    dovecot.m4: Rename DOVECOT_CFLAGS function to DC_DOVECOT_CFLAGS
+
+    Avoid conflict with variable of same name
+
+M	configure.ac
+M	m4/dovecot.m4
+
+2018-11-24 19:57:00 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (128c67aeb)
+
+    dovecot.m4: Use dnl instead of hash for comments
+
+
+M	m4/dovecot.m4
+
+2018-11-24 10:20:54 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (8ec36ce9e)
+
+    configure: Use DC_DOVECOT_HARDENING
+
+
+M	configure.ac
+
+2018-11-24 10:15:04 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (4695c87f7)
+
+    dovecot.m4: Add DC_DOVECOT_HARDENING to check hardening options
+
+
+M	m4/dovecot.m4
+
+2018-11-24 10:11:55 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (6cd4e6bb1)
+
+    m4: Move various compiler and linker checks to dovecot.m4
+
+    We don't want to distribute CFLAGS or LDFLAGS that break compiler, due to
+    lack of support.
+
+D	m4/cc_clang.m4
+D	m4/cc_fortify.m4
+D	m4/cc_pie.m4
+D	m4/cc_retpoline.m4
+D	m4/cc_stack_protector.m4
+D	m4/cflags.m4
+M	m4/dovecot.m4
+D	m4/ld_relro.m4
+D	m4/ld_whole_archive.m4
+D	m4/warnings.m4
+
+2018-11-23 15:34:51 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (322022a76)
+
+    lib-master: test-event-stats - Use PRIu64 format
+
+    Forgotten in e16ba6f
+
+M	src/lib-master/test-event-stats.c
+
+2018-11-23 15:33:20 +0200 Aki Tuomi <aki.tuomi@dovecot.fi> (81f60ae2f)
+
+    lib-master: test-event-stats - Include signal.h
+
+    Forgotten in e16ba6f
+
+M	src/lib-master/test-event-stats.c
+
+2018-10-18 15:25:53 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (6afb6ee66)
+
+    lib-master: test-event-stats: Properly ensure cleanup of all files generated
+    by tests.
+
+
+M	src/lib-master/test-event-stats.c
+
+2018-10-18 15:09:51 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (248cb8b90)
+
+    lib-master: test-event-stats: Move launch_test_stats() to a more logical
+    place.
+
+
+M	src/lib-master/test-event-stats.c
+
+2018-10-18 15:11:55 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (b7aebfc8e)
+
+    lib-master: Create local .gitignore file for potential test output junk.
+
+
+A	src/lib-master/.gitignore
+
+2018-10-18 12:35:22 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (38e9eb09a)
+
+    fts: Fix search query generation when one language ignores a token
+
+    The search query was changed to "NOT ALL", even though other languages used
+    the token.
+
+M	src/plugins/fts/fts-search-args.c
+
+2018-08-26 15:16:17 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (cf82a5d28)
+
+    lib-smtp: client: Fix potential segfault occurring after receiving RCPT
+    reply.
+
+    Could occur when RCPT reply is received befor DATA command is sent in LMTP
+    session.
+
+    Problem found by Coverity.
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-08-15 22:34:19 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (baa5f18fe)
+
+    lib-smtp: test-smtp-client-errors: Add tests for transaction timeouts.
+
+
+M	src/lib-smtp/test-smtp-client-errors.c
+
+2018-08-16 00:50:12 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (9bdd12659)
+
+    lib-smtp: client: Add debug message for the moment when all RCPT replies are
+    received.
+
+    This helps in debugging transaction state transition problems.
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-08-16 00:42:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (e3abd5319)
+
+    lib-smtp: client: Fix transaction state transition for the DATA command.
+
+    It progressed to the DATA state too early. By the looks of things, this only 
+    affected the correctness of error and debug messages. It does not affect the 
+    transaction itself.
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-08-16 00:28:51 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (3d932fea9)
+
+    lib-smtp: client: Fix segmentation fault occurring at transaction timeout.
+
+    In the DATA command callback trans->cmd_data can be NULL when the command is 
+    aborted from smtp_client_transaction_fail_reply().
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-08-15 22:39:58 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (4df412f8a)
+
+    lib-smtp: client: transaction: Prevent early transaction abort in
+    smtp_client_transaction_fail_reply().
+
+    Can happen in one of the command callbacks of aborted commands.
+
+M	src/lib-smtp/smtp-client-private.h
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-08-16 08:48:43 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (20345147c)
+
+    lib-smtp: Remove trailing whitespace in smtp-cient-transaction.c.
+
+
+M	src/lib-smtp/smtp-client-transaction.c
+
+2018-08-16 08:47:37 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (2a0c1c6f5)
+
+    lib-smtp: Remove trailing whitespace in test-smtp-client-errors.c.
+
+
+M	src/lib-smtp/test-smtp-client-errors.c
+
+2018-08-13 11:25:04 +0300 Martti Rannanjärvi <martti.rannanjarvi@dovecot.fi> (3d1ed9b9f)
+
+    lib-smtp: Read input before exiting in sendmail-exit-1.sh
+
+    This avoids a Broken pipe error that fails the unit test this script belongs
+    to.
+
+M	src/lib-smtp/test-bin/sendmail-exit-1.sh
+
+2018-08-09 09:21:09 +0300 Aki Tuomi <aki.tuomi@dovecot.fi> (51e14c73a)
+
+    lib-smtp: Include test-bin in dist
+
+
+M	src/lib-smtp/Makefile.am
+
+2018-08-09 12:38:43 +0300 Aki Tuomi <aki.tuomi@dovecot.fi> (00d005272)
+
+    lib-test: Warn if test_run or test_run_named result is not used
+
+    Ensures hopefully that unit tests do not succeed when they fail due to wrong
+    exit code.
+
+M	src/lib-test/test-common.h
+
+2018-08-09 12:44:22 +0300 Aki Tuomi <aki.tuomi@dovecot.fi> (314aba4a1)
+
+    global: Ensure unit tests return value
+
+
+M	src/lib-http/test-http-client-errors.c
+M	src/lib-http/test-http-payload.c
+M	src/lib-http/test-http-server-errors.c
+M	src/lib-smtp/test-smtp-client-errors.c
+M	src/lib-smtp/test-smtp-payload.c
+M	src/lib-smtp/test-smtp-server-errors.c
+M	src/lib-smtp/test-smtp-submit.c
+
+2018-07-06 11:22:46 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (b06b56413)
+
+    lib-auth: Fix reconnect timeout leak at deinit
+
+
+M	src/lib-auth/auth-server-connection.c
+
+2018-07-06 15:07:32 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (6465c3d90)
+
+    lib-http: client: Notify host object about submission of request before
+    submitting the request to the queue.
+
+    This makes sure the host idle timeout is stopped before the request is
+    submitted and the host object's refresh function is called. If the idle
+    timeout is still running at that point, the refresh function will return
+    success without performing a lookup, which can lead to a panic.
+
+    Panic was:
+
+    Panic: file ./http-client-private.h: line 672 (http_client_host_get_ip):
+    assertion failed: (idx < host->shared->ips_count)
+
+M	src/lib-http/http-client-host.c
+
+2018-07-02 23:59:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (e5f9dfa31)
+
+    lib-http: client: Reset ips count to zero before DNS lookup.
+
+
+M	src/lib-http/http-client-host.c
+
+2018-07-05 10:50:32 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (236216158)
+
+    lib: mempool - Remove unnecessary check
+
+    The previous commit guarantees that we always have one of _ILP32 and _LP64 
+    defined so we don't have to check ourselves.
+
+M	src/lib/test-mempool.c
+
+2018-07-05 10:48:49 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (6338778f7)
+
+    lib: Make sure exactly one of _ILP32 and _LP64 is defined at all times
+
+    These defines are very common, but not universal.  For example, clang on 
+    illumos and FreeBSD always defines one of them, while 32-bit Ubuntu 16.04 
+    doesn't define either.
+
+M	src/lib/compat.h
+
+2018-06-21 09:45:03 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (f1a2d99c0)
+
+    lib: mempool - Improve p_realloc() panic message
+
+    Most importantly, this differentiates it from the panic message that 
+    p_malloc() prints.
+
+M	src/lib/mempool.h
+M	src/lib/test-mempool.c
+
+2018-06-20 12:24:34 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (52954b8a2)
+
+    lib: mempool - Centralize p_free() NULL pointer check
+
+    This changes the behavior of p_free(pool, some_null_pointer) slightly.
+
+    datastack mempools:
+
+        Previously, the datastack frame id was checked regardless of whether or
+       not the pointer was NULL.  Now, only non-NULL pointers perform this
+       check.
+
+    system mempools:
+
+        Previously, the process would SIGSEGV if a NULL pointer was freed in a
+       debug binary on a system with malloc_usable_size().  Now, no SIGSEGV
+       occurs.
+
+    allocfree, alloconly, and unsafe datastack:
+
+        No change in behavior.
+
+M	src/lib/mempool-allocfree.c
+M	src/lib/mempool.h
+
+2018-06-20 11:47:26 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (b8fd8bf76)
+
+    lib: mempool - Centralize p_realloc() NULL pointer check
+
+    Instead of each mempool implementation having to check the pointer passed in 
+    for being NULL, we can check that the sizes are within the required bounds 
+    in p_realloc().
+
+M	src/lib/mempool-allocfree.c
+M	src/lib/mempool-alloconly.c
+M	src/lib/mempool-datastack.c
+M	src/lib/mempool-system.c
+M	src/lib/mempool-unsafe-datastack.c
+M	src/lib/mempool.h
+
+2018-06-20 11:42:28 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (361119589)
+
+    lib: mempool - Centralize p_{m,re}alloc() size checks
+
+    Instead of each mempool implementation having to check the allocation sizes 
+    for sanity, we can check that the sizes are within the required bounds in 
+    p_malloc() and p_realloc().
+
+    Since p_malloc() and p_realloc() are static inlines, some consumers will see 
+    a little bit of growth in binary size, but others will be able to optimize 
+    the check away at compile time.
+
+M	src/lib/mempool-allocfree.c
+M	src/lib/mempool-alloconly.c
+M	src/lib/mempool-datastack.c
+M	src/lib/mempool-system.c
+M	src/lib/mempool-unsafe-datastack.c
+M	src/lib/mempool.h
+
+2018-06-22 16:51:40 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (f4cac7d8e)
+
+    lib: mempool - Define a global max allocation size supported by all pools
+
+    Instead of relying on each mempool implementation to define its own limits 
+    and checks, this commit defines a generic one that's sufficient to make any 
+    mempool present or future happy.
+
+M	src/lib/mempool-allocfree.c
+M	src/lib/mempool-alloconly.c
+M	src/lib/mempool-datastack.c
+M	src/lib/mempool-system.c
+M	src/lib/mempool-unsafe-datastack.c
+M	src/lib/mempool.c
+M	src/lib/mempool.h
+M	src/lib/test-mempool-allocfree.c
+M	src/lib/test-mempool-alloconly.c
+M	src/lib/test-mempool.c
+
+2018-06-22 17:28:24 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (0a3e10c6f)
+
+    lib: mempool-allocfree: Remove unused #define
+
+    This define was never actually used.
+
+M	src/lib/mempool-allocfree.c
+
+2018-06-20 11:18:32 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (b7e85ed18)
+
+    lib: mempool-datastack - Use container_of instead of casts
+
+
+M	src/lib/mempool-datastack.c
+
+2018-06-20 11:18:13 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (a47129e81)
+
+    lib: mempool-alloconly - Use container_of instead of casts
+
+
+M	src/lib/mempool-alloconly.c
+
+2018-06-20 10:35:15 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (b6864a359)
+
+    lib: Rename a alloconly mempool helper function to make its scope obvious
+
+    pool_try_grow() makes it look like it is part of the mempool API, even 
+    though it is an internal helper specific to the alloconly pool.
+
+M	src/lib/mempool-alloconly.c
+
+2018-06-20 10:55:53 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (19d270a92)
+
+    lib: Document the unsafe datastack mempool
+
+
+M	src/lib/mempool-unsafe-datastack.c
+
+2018-06-19 16:08:40 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (592652d87)
+
+    lib: Document the system mempool
+
+
+M	src/lib/mempool-system.c
+
+2018-06-20 07:50:38 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (d82132c3a)
+
+    lib: Document datastack mempools
+
+
+M	src/lib/mempool-datastack.c
+
+2018-06-19 15:36:43 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (1c8eec973)
+
+    lib: Document allocfree mempools
+
+
+M	src/lib/mempool-allocfree.c
+
+2018-06-19 14:04:43 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (d463e8b4d)
+
+    lib: Document alloconly mempools
+
+
+M	src/lib/mempool-alloconly.c
+
+2018-06-29 16:17:40 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (49ed566ed)
+
+    lib: mempool - Further reduce test code duplication
+
+    We have to use a macro because we need to pass a type as an argument.
+
+M	src/lib/test-mempool.c
+
+2018-06-28 13:07:48 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (4d0b93d5e)
+
+    lib: mempool - Reduce test code duplication
+
+    The 32 and 64 bit versions of the tests were identical.
+
+M	src/lib/test-mempool.c
+
+2018-06-28 11:13:43 -0400 Josef 'Jeff' Sipek <jeff.sipek@dovecot.fi> (4f92bf25c)
+
+    lib: mempool - Generalize the test
+
+    Instead of hardcoding what appear to be arbitrary constants, use expressions 
+    based on UINT{16,32,64}_MAX.
+
+M	src/lib/test-mempool.c
+
+2018-05-31 23:59:50 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (409c2870a)
+
+    lib: str-sanitize: Use uni_utf8_data_truncate().
+
+
+M	src/lib/str-sanitize.c
+
+2018-06-01 00:02:53 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (f9b58a2ee)
+
+    lib: Add str_truncate_utf8().
+
+    It works similar to str_truncate(), but it makes sure the truncated string 
+    remains valid UTF-8.
+
+M	src/lib/str.c
+M	src/lib/str.h
+M	src/lib/test-str.c
+
+2018-06-01 00:02:16 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (46e2d311c)
+
+    lib: unichar: Add uni_utf8_data_truncate().
+
+    Returns the size of the data when truncated to be less than or equal to a
+    specified size, making sure UTF-8 character boundaries are respected.
+
+M	src/lib/unichar.c
+M	src/lib/unichar.h
+
+2018-06-20 14:01:18 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (38efac5f2)
+
+    lib-smtp: server: Make sure conn->state.data_failed is only set when no
+    previous BDAT/BURL is pending.
+
+    Otherwise, the server would sometimes send 503 error for the first BDAT/BURL 
+    command, while a subsequent command was actually failing earlier than the 
+    initial one completed. Additionally, this caused a panic crash.
+
+    Panic was:
+
+    submission(stephan)<8353><C+7QBfysKluhIAAAmoV78g>: Panic: Input stream
+    /home/stephan/Maildir/cur/1517515808.M176007P2993.johanna,S=1903,W=1956:2,DFS
+    unexpectedly has references
+
+M	src/lib-smtp/smtp-server-cmd-data.c
+M	src/lib-smtp/smtp-server-private.h
+
+2018-06-12 20:49:59 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (46df948df)
+
+    lib-smtp: Allocate ORCPT addr_type from given memory pool, not data stack
+
+    This could have caused crashes when parsing ORCPT.
+
+M	src/lib-smtp/smtp-params.c
+
+2018-05-26 14:49:01 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (5b7f38df2)
+
+    lib-smtp: client: Avoid sending an XCLIENT command longer than 512 bytes.
+
+    Send several separate XCLIENT commands instead. This way, it complies with
+    the base SMTP line length limit and with Postfix' original specification for
+    the XCLIENT command.
+
+    With the XCLIENT fields that Dovecot currently uses, this is very unlikely
+    to happen. Still, this needs to be fixed to make things reliable.
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-private.h
+
+2018-05-27 11:30:06 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (a51ee7b98)
+
+    lib-smtp: client: Do not start authentication before initial XCLIENT gets
+    reply.
+
+
+M	src/lib-smtp/smtp-client-connection.c
+M	src/lib-smtp/smtp-client-connection.h
+
+2018-05-26 15:44:43 +0200 Stephan Bosch <stephan.bosch@dovecot.fi> (0860c893d)
+
+    lib-smtp: server: Provide full proxy data to the conn_proxy_data_updated()
+    callback.
+
+    Before, it would only provide the fields that were updated, meaning that
+    some fields would remain unset, which caused problems for LMTP when more
+    than one XCLIENT command was sent or the ADDR field was not specified.
+
+M	src/lib-smtp/smtp-server-connection.c
+
+2018-03-18 00:57:36 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (d219bf98b)
+
+    lib-smtp: Add test-smtp-payload, test-smtp-submit, test-smtp-client-errors,
+    and test-smtp-server-errors to `make check`.
+
+
+M	src/lib-smtp/Makefile.am
+
+2018-03-18 00:53:14 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (267a54ba5)
+
+    lib-http: Add test-http-payload, test-http-client-errors, and
+    test-http-server-errors to `make check`.
+
+
+M	src/lib-http/Makefile.am
+
+2018-03-18 01:25:42 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (8c4ad1451)
+
+    lib-http: test-http-client-errors: Make the reconnect failure test less
+    time-sensitive.
+
+    Easily breaks in Valgrind.
+
+M	src/lib-http/test-http-client-errors.c
+
+2018-03-18 00:46:32 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (66447e451)
+
+    lib-smtp: test-smtp-payload: Terminate the test if it is hanging for some
+    reason.
+
+
+M	src/lib-smtp/test-smtp-payload.c
+
+2018-03-18 00:34:22 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (fd52ec26f)
+
+    lib-smtp: test-smtp-client-errors: Terminate the test if it is hanging for
+    some reason.
+
+
+M	src/lib-smtp/test-smtp-client-errors.c
+
+2017-12-28 16:33:49 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (fc5a5613c)
+
+    lib-http: test-http-client-errors: Terminate the test if it is hanging for
+    some reason.
+
+
+M	src/lib-http/test-http-client-errors.c
+
+2018-02-09 23:58:51 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (f490b39cf)
+
+    lib-http: test-http-payload: Add SSL tests.
+
+
+M	src/lib-http/Makefile.am
+M	src/lib-http/test-http-payload.c
+
+2018-02-09 22:09:27 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (8ff38cfdb)
+
+    lib-smtp: test-smtp-payload: Add SSL tests.
+
+
+M	src/lib-smtp/Makefile.am
+M	src/lib-smtp/test-smtp-payload.c
+
+2018-02-10 00:00:17 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (754d79d31)
+
+    lib-http: test-http-payload: Ignore SIGPIPE.
+
+
+M	src/lib-http/test-http-payload.c
+
+2018-02-09 22:09:47 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (5819d7789)
+
+    lib-smtp: test-smtp-payload: Ignore SIGPIPE.
+
+
+M	src/lib-smtp/test-smtp-payload.c
+
+2018-02-09 22:27:00 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (674b0a15f)
+
+    lib-http: server: Allow creating server with custom SSL settings.
+
+    Normally, the settings are obtained through lib-master, but that is not 
+    really suitable for the test suite.
+
+M	src/lib-http/http-server-connection.c
+M	src/lib-http/http-server-private.h
+M	src/lib-http/http-server.c
+M	src/lib-http/http-server.h
+
+2018-02-09 22:06:49 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (1d341c782)
+
+    lib-smtp: server: Allow creating server with custom SSL settings.
+
+    Normally, the settings are obtained through lib-master, but that is not 
+    really suitable for the test suite.
+
+M	src/lib-smtp/smtp-server-connection.c
+M	src/lib-smtp/smtp-server-private.h
+M	src/lib-smtp/smtp-server.c
+M	src/lib-smtp/smtp-server.h
+
+2018-03-17 21:08:09 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (3d3166cde)
+
+    lib-smtp: client: Amend connection debug message with source ip:port.
+
+    Helps matching debug logs between client and server.
+
+M	src/lib-smtp/smtp-client-connection.c
+
+2018-03-17 18:10:04 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (510923a05)
+
+    lib-smtp: test-smtp-payload: Keep the number of pending transactions
+    constant.
+
+    Before, a window was used.
+
+M	src/lib-smtp/test-smtp-payload.c
+
+2018-03-17 18:05:01 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (93c58a231)
+
+    lib-smtp: test-smtp-payload: Make proper definition for the maximum number
+    of parallel transactions.
+
+
+M	src/lib-smtp/test-smtp-payload.c
+
+2018-02-10 02:20:31 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (17cbf4daa)
+
+    lib-http: test-http-payload: Add test for exchanging payload with unknown
+    size.
+
+    This will force using the chunked transfer encoding.
+
+M	src/lib-http/test-http-payload.c
+
+2018-03-17 21:34:11 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (8df31c7cb)
+
+    lib-http: test-http-payload: server: Fix asynchronous listening.
+
+    The listening socket was blocking and the io handler only accepted one
+    connection per run.
+
+M	src/lib-http/test-http-payload.c
+
+2018-03-17 14:14:03 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (f1bbf3b66)
+
+    lib-smtp: test-smtp-payload: server: Fix asynchronous listening.
+
+    The listening socket was blocking and the io handler only accepted one
+    connection per run.
+
+M	src/lib-smtp/test-smtp-payload.c
+
+2018-02-09 22:04:23 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (7c9940739)
+
+    lib-ssl-iostream: Add support for creating server and client test SSL
+    settings.
+
+    This is useful for building test cases with SSL support.
+
+M	src/lib-ssl-iostream/Makefile.am
+A	src/lib-ssl-iostream/iostream-ssl-test.c
+A	src/lib-ssl-iostream/iostream-ssl-test.h
+
+2018-02-16 14:33:33 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (1daa759ea)
+
+    lib: Fix compiler warning when arc4random_buf() is used for random_fill()
+
+
+M	src/lib/randgen.c
+
+2018-02-15 23:41:25 +0100 Stephan Bosch <stephan.bosch@dovecot.fi> (60159147e)
+
+    lib-mail: message-parser: Fixed Clang 6.0 compiler warning.
+
+    Warning was:
+
+    index-mail.c:1182:3: warning: arithmetic on a null pointer treated as a cast 
+    from integer to pointer is a GNU extension [-Wnull-pointer-arithmetic]
+                   message_parser_parse_body(data->parser_ctx,
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ../../../src/lib-mail/message-parser.h:95:28: note: expanded from macro
+    'message_parser_parse_body'
+                   (void *)((char *)context + CALLBACK_TYPECHECK(callback, \
+                            ~~~~~~~~~~~~~~~ ^
+
+M	src/lib-mail/message-parser.h
+
+2019-01-16 18:28:57 +0200 Aki Tuomi <aki.tuomi@open-xchange.com> (79b652fff)
 
     auth: Do not import empty certificate username
 
 
 M	src/auth/auth-request.c
 
-2019-01-16 18:24:20 +0200 Aki Tuomi <aki.tuomi@open-xchange.com> (ff6de0905)
+2019-01-16 18:24:20 +0200 Aki Tuomi <aki.tuomi@open-xchange.com> (61471a5c4)
 
     auth: Fail authentication if certificate username was unexpectedly missing
 
 
 M	src/auth/auth-request-handler.c
 
-2019-01-15 17:36:37 +0200 Aki Tuomi <aki.tuomi@open-xchange.com> (ad9241437)
+2019-01-15 17:36:37 +0200 Aki Tuomi <aki.tuomi@open-xchange.com> (eb1fa103d)
 
     login-common: Ensure we get username from certificate
 
 
 M	src/login-common/sasl-server.c
 
-2018-09-06 09:36:07 +0300 Aki Tuomi <aki.tuomi@dovecot.fi> (964112f05)
+2018-04-26 23:05:21 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (9b00b5267)
+
+    lib-storage: Fix event leak when failing to create storage
+
+
+M	src/lib-storage/mail-storage.c
+
+2018-09-06 09:36:07 +0300 Aki Tuomi <aki.tuomi@dovecot.fi> (aa5c05ebd)
 
     driver-sqlite: Fix event usage in driver_sqlite_exec
 
@@ -35,15 +3896,14 @@ M	src/login-common/sasl-server.c
 
 M	src/lib-sql/driver-sqlite.c
 
-2018-11-21 11:47:24 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (0ecbaf23d)
+2018-11-23 10:12:27 +0200 Timo Sirainen <timo.sirainen@dovecot.fi> (605155905)
 
-    Released v2.3.4.
+    Update NEWS to v2.3.4
 
 
 M	NEWS
-M	configure.ac
 
-2018-05-14 21:33:53 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (46f0ad152)
+2018-05-14 21:33:53 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (1f50bc87b)
 
     doveadm force-resync: Add -f parameter to fsck index while opening it
 
@@ -52,7 +3912,7 @@ M	configure.ac
 
 M	src/doveadm/doveadm-mail.c
 
-2018-05-14 21:31:59 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (c6a624793)
+2018-05-14 21:31:59 +0300 Timo Sirainen <timo.sirainen@dovecot.fi> (689c5171f)
 
     lib-storage: Add MAILBOX_FLAG_FSCK to fsck index immediately after opening
     it

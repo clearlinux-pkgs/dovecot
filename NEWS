@@ -1,15 +1,26 @@
-v2.3.4.1 2019-02-05  Aki Tuomi <aki.tuomi@open-xchange.com>
+v2.3.5 2019-03-05  Timo Sirainen <tss@iki.fi>
 
-	* CVE-2019-3814: If imap/pop3/managesieve/submission client has
-	  trusted certificate with missing username field
-	  (ssl_cert_username_field), under some configurations Dovecot
-	  mistakenly trusts the username provided via authentication instead
-	  of failing.
-	* ssl_cert_username_field setting was ignored with external SMTP AUTH,
-	  because none of the MTAs (Postfix, Exim) currently send the
-	  cert_username field. This may have allowed users with trusted
-	  certificate to specify any username in the authentication. This bug
-	  didn't affect Dovecot's Submission service.
+	+ Lua push notification driver: mail keywords and flags are provided
+	  in MessageNew and MessageAppend events.
+	+ submission: Implement support for plugins.
+	+ auth: When auth_policy_log_only=yes, only log what the policy server
+	  response would do without actually doing it.
+	+ auth: Always log policy server decisions with auth_verbose=yes
+	- v2.3.[34]: doveadm log errors: Output was missing user/session
+	- lda: Debug log lines could have shown slightly corrupted
+	- login proxy: Login processes may have crashed in various ways when
+	  login_proxy_max_disconnect_delay was set.
+	- imap: Fix crash with Maildir+zlib if client disconnects during APPEND
+	- lmtp proxy: Fix potential assert-crash
+	- lmtp/submission: Fix crash when SMTP client transaction times out
+	- submission: Split large XCLIENT commands to 512 bytes per command,
+	  so Postfix accepts them.
+	- submission: Fix crash when client sends invalid BURL command
+	- submission: relay backend: VRFY command: Avoid forwarding 500 and
+	  502 replies back to client.
+	- lib-http: Fix potential assert-crash when DNS lookup fails
+	- lib-fts: Fix search query generation when one language ignores a
+	  token (e.g. via stopwords).
 
 v2.3.4 2018-11-23  Timo Sirainen <tss@iki.fi>
 
