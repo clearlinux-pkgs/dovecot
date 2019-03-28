@@ -1,3 +1,25 @@
+2019-03-18 12:54:07 +0200 Aki Tuomi <aki.tuomi@open-xchange.com> (7ec6d0ade)
+
+    Released v2.3.5.1
+
+
+M	NEWS
+M	configure.ac
+
+2019-02-04 19:25:13 -0800 Timo Sirainen <timo.sirainen@open-xchange.com> (696320b0f)
+
+    fts: Fix buffer overflow when reading oversized fts header
+
+
+M	src/plugins/fts/fts-api.c
+
+2019-02-04 19:23:02 -0800 Timo Sirainen <timo.sirainen@open-xchange.com> (578cf77e8)
+
+    lib-storage: Fix buffer overflow when reading oversized hdr-pop3-uidl header
+
+
+M	src/lib-storage/index/index-pop3-uidl.c
+
 2019-02-25 13:21:31 +0200 Timo Sirainen <timo.sirainen@open-xchange.com> (513208660)
 
     Released v2.3.5.
