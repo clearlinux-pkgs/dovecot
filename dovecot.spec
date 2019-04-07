@@ -6,7 +6,7 @@
 #
 Name     : dovecot
 Version  : 2.3.5.1
-Release  : 12
+Release  : 13
 URL      : https://dovecot.org/releases/2.3/dovecot-2.3.5.1.tar.gz
 Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.5.1.tar.gz
 Source1  : dovecot.service
@@ -44,7 +44,6 @@ Requires: dovecot-data = %{version}-%{release}
 Requires: dovecot-libexec = %{version}-%{release}
 Requires: dovecot-config = %{version}-%{release}
 Requires: dovecot-license = %{version}-%{release}
-Requires: dovecot-man = %{version}-%{release}
 Requires: dovecot-services = %{version}-%{release}
 
 %description bin
@@ -141,7 +140,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1553813198
+export SOURCE_DATE_EPOCH=1554614495
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
 unset LDFLAGS
@@ -157,7 +156,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1553813198
+export SOURCE_DATE_EPOCH=1554614495
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
 cp COPYING %{buildroot}/usr/share/package-licenses/dovecot/COPYING
