@@ -6,7 +6,7 @@
 #
 Name     : dovecot
 Version  : 2.3.6
-Release  : 16
+Release  : 17
 URL      : https://dovecot.org/releases/2.3/dovecot-2.3.6.tar.gz
 Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.6.tar.gz
 Source1  : dovecot.service
@@ -25,10 +25,15 @@ Requires: dovecot-man = %{version}-%{release}
 Requires: dovecot-services = %{version}-%{release}
 BuildRequires : Linux-PAM-dev
 BuildRequires : bzip2-dev
+BuildRequires : clucene-core-dev
+BuildRequires : expat-dev
 BuildRequires : libcap-dev
 BuildRequires : lz4-dev
+BuildRequires : mariadb-dev
 BuildRequires : openssl-dev
+BuildRequires : pkgconfig(sqlite3)
 BuildRequires : pkgconfig(zlib)
+BuildRequires : postgresql-dev
 BuildRequires : xz-dev
 
 %description
@@ -88,6 +93,30 @@ Requires: dovecot-man = %{version}-%{release}
 doc components for the dovecot package.
 
 
+%package extras-fts-lucene
+Summary: extras-fts-lucene components for the dovecot package.
+Group: Default
+
+%description extras-fts-lucene
+extras-fts-lucene components for the dovecot package.
+
+
+%package extras-mysql
+Summary: extras-mysql components for the dovecot package.
+Group: Default
+
+%description extras-mysql
+extras-mysql components for the dovecot package.
+
+
+%package extras-pgsql
+Summary: extras-pgsql components for the dovecot package.
+Group: Default
+
+%description extras-pgsql
+extras-pgsql components for the dovecot package.
+
+
 %package lib
 Summary: lib components for the dovecot package.
 Group: Libraries
@@ -141,7 +170,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1561399325
+export SOURCE_DATE_EPOCH=1561412924
 export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
@@ -150,7 +179,12 @@ export CFLAGS="$CFLAGS -fno-lto "
 export FCFLAGS="$CFLAGS -fno-lto "
 export FFLAGS="$CFLAGS -fno-lto "
 export CXXFLAGS="$CXXFLAGS -fno-lto "
-%configure --disable-static
+%configure --disable-static --with-lucene \
+--with-sqlite \
+--with-pgsql \
+--with-mysql \
+--with-sql=plugin \
+--with-solr
 make  %{?_smp_mflags}
 
 %check
@@ -161,7 +195,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1561399325
+export SOURCE_DATE_EPOCH=1561412924
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
 cp COPYING %{buildroot}/usr/share/package-licenses/dovecot/COPYING
@@ -797,10 +831,37 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 %defattr(0644,root,root,0755)
 %doc /usr/share/doc/dovecot/*
 
+%files extras-fts-lucene
+%defattr(-,root,root,-)
+/usr/lib64/dovecot/doveadm/lib20_doveadm_fts_lucene_plugin.so
+/usr/lib64/dovecot/lib21_fts_lucene_plugin.so
+
+%files extras-mysql
+%defattr(-,root,root,-)
+/usr/lib64/dovecot/auth/libdriver_mysql.so
+/usr/lib64/dovecot/dict/libdriver_mysql.so
+/usr/lib64/dovecot/libdriver_mysql.so
+
+%files extras-pgsql
+%defattr(-,root,root,-)
+/usr/lib64/dovecot/auth/libdriver_pgsql.so
+/usr/lib64/dovecot/dict/libdriver_pgsql.so
+/usr/lib64/dovecot/libdriver_pgsql.so
+
 %files lib
 %defattr(-,root,root,-)
+%exclude /usr/lib64/dovecot/auth/libdriver_mysql.so
+%exclude /usr/lib64/dovecot/auth/libdriver_pgsql.so
+%exclude /usr/lib64/dovecot/dict/libdriver_mysql.so
+%exclude /usr/lib64/dovecot/dict/libdriver_pgsql.so
+%exclude /usr/lib64/dovecot/doveadm/lib20_doveadm_fts_lucene_plugin.so
+%exclude /usr/lib64/dovecot/lib21_fts_lucene_plugin.so
+%exclude /usr/lib64/dovecot/libdriver_mysql.so
+%exclude /usr/lib64/dovecot/libdriver_pgsql.so
 /usr/lib64/dovecot/auth/lib20_auth_var_expand_crypt.so
 /usr/lib64/dovecot/auth/libauthdb_imap.so
+/usr/lib64/dovecot/auth/libdriver_sqlite.so
+/usr/lib64/dovecot/dict/libdriver_sqlite.so
 /usr/lib64/dovecot/doveadm/lib10_doveadm_acl_plugin.so
 /usr/lib64/dovecot/doveadm/lib10_doveadm_expire_plugin.so
 /usr/lib64/dovecot/doveadm/lib10_doveadm_quota_plugin.so
@@ -833,6 +894,7 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 /usr/lib64/dovecot/lib20_var_expand_crypt.so
 /usr/lib64/dovecot/lib20_virtual_plugin.so
 /usr/lib64/dovecot/lib20_zlib_plugin.so
+/usr/lib64/dovecot/lib21_fts_solr_plugin.so
 /usr/lib64/dovecot/lib21_fts_squat_plugin.so
 /usr/lib64/dovecot/lib30_imap_zlib_plugin.so
 /usr/lib64/dovecot/lib90_old_stats_plugin.so
@@ -863,6 +925,7 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 /usr/lib64/dovecot/libdovecot.so
 /usr/lib64/dovecot/libdovecot.so.0
 /usr/lib64/dovecot/libdovecot.so.0.0.0
+/usr/lib64/dovecot/libdriver_sqlite.so
 /usr/lib64/dovecot/libfs_compress.so
 /usr/lib64/dovecot/libfs_crypt.so
 /usr/lib64/dovecot/libfs_mail_crypt.so

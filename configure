@@ -1,0 +1,6 @@
+--with-lucene
+--with-sqlite
+--with-pgsql
+--with-mysql
+--with-sql=plugin
+--with-solr

@@ -1,8 +1,11 @@
 # This file contains additional build requirements that did not get
 # picked up automatically. One name per line, no whitespace.
-lz4-dev
-libcap-dev
-openssl-dev
 Linux-PAM-dev
 bzip2-dev
+clucene-core-dev
+libcap-dev
+lz4-dev
+mariadb-dev
+openssl-dev
+postgresql-dev
 xz-dev
