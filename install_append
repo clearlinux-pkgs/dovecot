@@ -1,0 +1,3 @@
+mkdir -p %{buildroot}/usr/share/doc/dovecot
+install -t %{buildroot}/usr/share/doc/dovecot doc/documentation.txt
+cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot

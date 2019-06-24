@@ -6,7 +6,7 @@
 #
 Name     : dovecot
 Version  : 2.3.6
-Release  : 15
+Release  : 16
 URL      : https://dovecot.org/releases/2.3/dovecot-2.3.6.tar.gz
 Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.6.tar.gz
 Source1  : dovecot.service
@@ -141,11 +141,15 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1556919084
+export SOURCE_DATE_EPOCH=1561399325
+export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
 unset LDFLAGS
-export LDFLAGS="${LDFLAGS} -fno-lto"
+export CFLAGS="$CFLAGS -fno-lto "
+export FCFLAGS="$CFLAGS -fno-lto "
+export FFLAGS="$CFLAGS -fno-lto "
+export CXXFLAGS="$CXXFLAGS -fno-lto "
 %configure --disable-static
 make  %{?_smp_mflags}
 
@@ -157,7 +161,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1556919084
+export SOURCE_DATE_EPOCH=1561399325
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
 cp COPYING %{buildroot}/usr/share/package-licenses/dovecot/COPYING
@@ -168,6 +172,11 @@ mkdir -p %{buildroot}/usr/lib/systemd/system
 install -m 0644 %{SOURCE1} %{buildroot}/usr/lib/systemd/system/dovecot.service
 mkdir -p %{buildroot}/usr/lib/tmpfiles.d
 install -m 0644 %{SOURCE2} %{buildroot}/usr/lib/tmpfiles.d/dovecot.conf
+## install_append content
+mkdir -p %{buildroot}/usr/share/doc/dovecot
+install -t %{buildroot}/usr/share/doc/dovecot doc/documentation.txt
+cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
+## install_append end
 
 %files
 %defattr(-,root,root,-)
