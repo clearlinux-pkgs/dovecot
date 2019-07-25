@@ -5,14 +5,14 @@
 # Source0 file verified with key 0x18A348AEED409DA1 (dovecot-ce@dovecot.org)
 #
 Name     : dovecot
-Version  : 2.3.6
-Release  : 17
-URL      : https://dovecot.org/releases/2.3/dovecot-2.3.6.tar.gz
-Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.6.tar.gz
+Version  : 2.3.7.1
+Release  : 18
+URL      : https://dovecot.org/releases/2.3/dovecot-2.3.7.1.tar.gz
+Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.7.1.tar.gz
 Source1  : dovecot.service
 Source2  : dovecot.tmpfiles
-Source99 : https://dovecot.org/releases/2.3/dovecot-2.3.6.tar.gz.sig
-Summary  : No detailed summary available
+Source99 : https://dovecot.org/releases/2.3/dovecot-2.3.7.1.tar.gz.sig
+Summary  : An IMAP and POP3 server written with security primarily in mind
 Group    : Development/Tools
 License  : LGPL-2.1 MIT
 Requires: dovecot-bin = %{version}-%{release}
@@ -31,6 +31,7 @@ BuildRequires : libcap-dev
 BuildRequires : lz4-dev
 BuildRequires : mariadb-dev
 BuildRequires : openssl-dev
+BuildRequires : pandoc
 BuildRequires : pkgconfig(sqlite3)
 BuildRequires : pkgconfig(zlib)
 BuildRequires : postgresql-dev
@@ -78,6 +79,7 @@ Requires: dovecot-lib = %{version}-%{release}
 Requires: dovecot-bin = %{version}-%{release}
 Requires: dovecot-data = %{version}-%{release}
 Provides: dovecot-devel = %{version}-%{release}
+Requires: dovecot = %{version}-%{release}
 Requires: dovecot = %{version}-%{release}
 
 %description dev
@@ -163,14 +165,14 @@ services components for the dovecot package.
 
 
 %prep
-%setup -q -n dovecot-2.3.6
+%setup -q -n dovecot-2.3.7.1
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
-export LANG=C
-export SOURCE_DATE_EPOCH=1561412924
+export LANG=C.UTF-8
+export SOURCE_DATE_EPOCH=1564065536
 export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
@@ -188,14 +190,14 @@ export CXXFLAGS="$CXXFLAGS -fno-lto "
 make  %{?_smp_mflags}
 
 %check
-export LANG=C
+export LANG=C.UTF-8
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1561412924
+export SOURCE_DATE_EPOCH=1564065536
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
 cp COPYING %{buildroot}/usr/share/package-licenses/dovecot/COPYING
@@ -242,6 +244,7 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 /usr/share/dovecot/stopwords/stopwords_ro.txt
 /usr/share/dovecot/stopwords/stopwords_ru.txt
 /usr/share/dovecot/stopwords/stopwords_sv.txt
+/usr/share/dovecot/stopwords/stopwords_tr.txt
 
 %files dev
 %defattr(-,root,root,-)
@@ -262,7 +265,6 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 /usr/include/dovecot/auth-client-connection.h
 /usr/include/dovecot/auth-client-interface.h
 /usr/include/dovecot/auth-client-private.h
-/usr/include/dovecot/auth-client-request.h
 /usr/include/dovecot/auth-client.h
 /usr/include/dovecot/auth-common.h
 /usr/include/dovecot/auth-fields.h
@@ -275,7 +277,6 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 /usr/include/dovecot/auth-request-stats.h
 /usr/include/dovecot/auth-request-var-expand.h
 /usr/include/dovecot/auth-request.h
-/usr/include/dovecot/auth-server-connection.h
 /usr/include/dovecot/auth-settings.h
 /usr/include/dovecot/auth-stats.h
 /usr/include/dovecot/auth-token.h
@@ -541,6 +542,11 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 /usr/include/dovecot/lib-signals.h
 /usr/include/dovecot/lib.h
 /usr/include/dovecot/llist.h
+/usr/include/dovecot/lmtp-client.h
+/usr/include/dovecot/lmtp-commands.h
+/usr/include/dovecot/lmtp-common.h
+/usr/include/dovecot/lmtp-recipient.h
+/usr/include/dovecot/lmtp-settings.h
 /usr/include/dovecot/log-throttle.h
 /usr/include/dovecot/login-common.h
 /usr/include/dovecot/login-proxy-state.h

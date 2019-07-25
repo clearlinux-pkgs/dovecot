@@ -64,5 +64,4 @@ Configure miss: special_textcat_Init in -ltextcat
 Configure miss: sys/apparmor.h usability
 Configure miss: sys/apparmor.h presence
 Configure miss: sys/apparmor.h
-Configure miss: pandoc
 Configure miss: valgrind
