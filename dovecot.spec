@@ -5,13 +5,13 @@
 # Source0 file verified with key 0x18A348AEED409DA1 (dovecot-ce@dovecot.org)
 #
 Name     : dovecot
-Version  : 2.3.7.1
-Release  : 18
-URL      : https://dovecot.org/releases/2.3/dovecot-2.3.7.1.tar.gz
-Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.7.1.tar.gz
+Version  : 2.3.7.2
+Release  : 19
+URL      : https://dovecot.org/releases/2.3/dovecot-2.3.7.2.tar.gz
+Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.7.2.tar.gz
 Source1  : dovecot.service
 Source2  : dovecot.tmpfiles
-Source99 : https://dovecot.org/releases/2.3/dovecot-2.3.7.1.tar.gz.sig
+Source3 : https://dovecot.org/releases/2.3/dovecot-2.3.7.2.tar.gz.sig
 Summary  : An IMAP and POP3 server written with security primarily in mind
 Group    : Development/Tools
 License  : LGPL-2.1 MIT
@@ -79,7 +79,6 @@ Requires: dovecot-lib = %{version}-%{release}
 Requires: dovecot-bin = %{version}-%{release}
 Requires: dovecot-data = %{version}-%{release}
 Provides: dovecot-devel = %{version}-%{release}
-Requires: dovecot = %{version}-%{release}
 Requires: dovecot = %{version}-%{release}
 
 %description dev
@@ -165,14 +164,14 @@ services components for the dovecot package.
 
 
 %prep
-%setup -q -n dovecot-2.3.7.1
+%setup -q -n dovecot-2.3.7.2
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1564065536
+export SOURCE_DATE_EPOCH=1567014764
 export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
@@ -197,7 +196,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1564065536
+export SOURCE_DATE_EPOCH=1567014764
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
 cp COPYING %{buildroot}/usr/share/package-licenses/dovecot/COPYING
@@ -856,14 +855,6 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 
 %files lib
 %defattr(-,root,root,-)
-%exclude /usr/lib64/dovecot/auth/libdriver_mysql.so
-%exclude /usr/lib64/dovecot/auth/libdriver_pgsql.so
-%exclude /usr/lib64/dovecot/dict/libdriver_mysql.so
-%exclude /usr/lib64/dovecot/dict/libdriver_pgsql.so
-%exclude /usr/lib64/dovecot/doveadm/lib20_doveadm_fts_lucene_plugin.so
-%exclude /usr/lib64/dovecot/lib21_fts_lucene_plugin.so
-%exclude /usr/lib64/dovecot/libdriver_mysql.so
-%exclude /usr/lib64/dovecot/libdriver_pgsql.so
 /usr/lib64/dovecot/auth/lib20_auth_var_expand_crypt.so
 /usr/lib64/dovecot/auth/libauthdb_imap.so
 /usr/lib64/dovecot/auth/libdriver_sqlite.so
