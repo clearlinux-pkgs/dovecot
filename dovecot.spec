@@ -6,7 +6,7 @@
 #
 Name     : dovecot
 Version  : 2.3.7.2
-Release  : 20
+Release  : 21
 URL      : https://dovecot.org/releases/2.3/dovecot-2.3.7.2.tar.gz
 Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.7.2.tar.gz
 Source1  : dovecot.service
