@@ -50,6 +50,7 @@ Configure miss: if struct dqblk.dqb_curblocks exists
 Configure miss: if Q_QUOTACTL ioctl exists
 Configure miss: whether va_lists can be copied by value
 Configure miss: SSL_COMP_free_compression_methods in -lssl
+Configure miss: whether we will be linking with libunwind
 Configure miss: whether we will be linking in Lua
 Configure miss: pam/pam_appl.h usability
 Configure miss: pam/pam_appl.h presence
