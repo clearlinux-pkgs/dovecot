@@ -4,3 +4,4 @@
 --with-mysql
 --with-sql=plugin
 --with-solr
+--with-ldap

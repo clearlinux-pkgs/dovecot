@@ -6,13 +6,13 @@
 #
 Name     : dovecot
 Version  : 2.3.10
-Release  : 26
+Release  : 27
 URL      : https://dovecot.org/releases/2.3/dovecot-2.3.10.tar.gz
 Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.10.tar.gz
 Source1  : dovecot.service
 Source2  : dovecot.tmpfiles
 Source3  : https://dovecot.org/releases/2.3/dovecot-2.3.10.tar.gz.sig
-Summary  : An IMAP and POP3 server written with security primarily in mind
+Summary  : No detailed summary available
 Group    : Development/Tools
 License  : LGPL-2.1 MIT
 Requires: dovecot-bin = %{version}-%{release}
@@ -26,10 +26,12 @@ Requires: dovecot-services = %{version}-%{release}
 BuildRequires : Linux-PAM-dev
 BuildRequires : bzip2-dev
 BuildRequires : clucene-core-dev
+BuildRequires : cyrus-sasl-dev
 BuildRequires : expat-dev
 BuildRequires : libcap-dev
 BuildRequires : lz4-dev
 BuildRequires : mariadb-dev
+BuildRequires : openldap-dev
 BuildRequires : openssl-dev
 BuildRequires : pandoc
 BuildRequires : pkgconfig(sqlite3)
@@ -79,7 +81,6 @@ Requires: dovecot-lib = %{version}-%{release}
 Requires: dovecot-bin = %{version}-%{release}
 Requires: dovecot-data = %{version}-%{release}
 Provides: dovecot-devel = %{version}-%{release}
-Requires: dovecot = %{version}-%{release}
 Requires: dovecot = %{version}-%{release}
 
 %description dev
@@ -173,22 +174,24 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1583505131
-# -Werror is for werrorists
+export SOURCE_DATE_EPOCH=1586304821
 export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
+export FFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
+export FCFLAGS=$FFLAGS
 unset LDFLAGS
 export CFLAGS="$CFLAGS -fno-lto "
-export FCFLAGS="$CFLAGS -fno-lto "
-export FFLAGS="$CFLAGS -fno-lto "
+export FCFLAGS="$FFLAGS -fno-lto "
+export FFLAGS="$FFLAGS -fno-lto "
 export CXXFLAGS="$CXXFLAGS -fno-lto "
 %configure --disable-static --with-lucene \
 --with-sqlite \
 --with-pgsql \
 --with-mysql \
 --with-sql=plugin \
---with-solr
+--with-solr \
+--with-ldap
 make  %{?_smp_mflags}
 
 %check
@@ -199,7 +202,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1583505131
+export SOURCE_DATE_EPOCH=1586304821
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
 cp %{_builddir}/dovecot-2.3.10/COPYING %{buildroot}/usr/share/package-licenses/dovecot/9de8baa1908ab951af2ac0cb1e9766a1112b6d3c
@@ -538,6 +541,7 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 /usr/include/dovecot/json-parser.h
 /usr/include/dovecot/json-tree.h
 /usr/include/dovecot/lda-settings.h
+/usr/include/dovecot/ldap-client.h
 /usr/include/dovecot/lib-event-private.h
 /usr/include/dovecot/lib-event.h
 /usr/include/dovecot/lib-signals.h
@@ -913,6 +917,9 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 /usr/lib64/dovecot/libdovecot-lda.so
 /usr/lib64/dovecot/libdovecot-lda.so.0
 /usr/lib64/dovecot/libdovecot-lda.so.0.0.0
+/usr/lib64/dovecot/libdovecot-ldap.so
+/usr/lib64/dovecot/libdovecot-ldap.so.0
+/usr/lib64/dovecot/libdovecot-ldap.so.0.0.0
 /usr/lib64/dovecot/libdovecot-login.so
 /usr/lib64/dovecot/libdovecot-login.so.0
 /usr/lib64/dovecot/libdovecot-login.so.0.0.0
