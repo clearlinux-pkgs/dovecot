@@ -6,7 +6,7 @@
 #
 Name     : dovecot
 Version  : 2.3.10.1
-Release  : 28
+Release  : 29
 URL      : https://dovecot.org/releases/2.3/dovecot-2.3.10.1.tar.gz
 Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.10.1.tar.gz
 Source1  : dovecot.service
@@ -174,7 +174,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1589814869
+export SOURCE_DATE_EPOCH=1589996534
 export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
@@ -202,7 +202,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make VERBOSE=1 V=1 %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1589814869
+export SOURCE_DATE_EPOCH=1589996534
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
 cp %{_builddir}/dovecot-2.3.10.1/COPYING %{buildroot}/usr/share/package-licenses/dovecot/9de8baa1908ab951af2ac0cb1e9766a1112b6d3c
@@ -217,6 +217,12 @@ install -m 0644 %{SOURCE2} %{buildroot}/usr/lib/tmpfiles.d/dovecot.conf
 mkdir -p %{buildroot}/usr/share/doc/dovecot
 install -t %{buildroot}/usr/share/doc/dovecot doc/documentation.txt
 cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
+
+# On version upgrades, dovecot must be restart otherwise all connections
+# will become broken due to version mismatch between running daemon and
+# spawned children processes.
+mkdir -p %{buildroot}/usr/share/clr-service-restart
+ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-service-restart/dovecot.service
 ## install_append end
 
 %files
@@ -237,6 +243,7 @@ cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
 
 %files data
 %defattr(-,root,root,-)
+/usr/share/clr-service-restart/dovecot.service
 /usr/share/dovecot/stopwords/stopwords_da.txt
 /usr/share/dovecot/stopwords/stopwords_de.txt
 /usr/share/dovecot/stopwords/stopwords_en.txt

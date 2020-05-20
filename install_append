@@ -1,3 +1,9 @@
 mkdir -p %{buildroot}/usr/share/doc/dovecot
 install -t %{buildroot}/usr/share/doc/dovecot doc/documentation.txt
 cp -r doc/example-config %{buildroot}/usr/share/doc/dovecot
+
+# On version upgrades, dovecot must be restart otherwise all connections
+# will become broken due to version mismatch between running daemon and
+# spawned children processes.
+mkdir -p %{buildroot}/usr/share/clr-service-restart
+ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-service-restart/dovecot.service
