@@ -61,6 +61,7 @@ Configure miss: sasl.h usability
 Configure miss: sasl.h presence
 Configure miss: sasl.h
 Configure miss: LIBSODIUM
+Configure miss: ZSTD
 Configure miss: LIBTIRPC
 Configure miss: library containing quota_open
 Configure miss: sb_stemmer_new in -lstemmer

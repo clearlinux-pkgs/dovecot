@@ -5,13 +5,13 @@
 # Source0 file verified with key 0x18A348AEED409DA1 (dovecot-ce@dovecot.org)
 #
 Name     : dovecot
-Version  : 2.3.10.1
-Release  : 29
-URL      : https://dovecot.org/releases/2.3/dovecot-2.3.10.1.tar.gz
-Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.10.1.tar.gz
+Version  : 2.3.11.3
+Release  : 30
+URL      : https://dovecot.org/releases/2.3/dovecot-2.3.11.3.tar.gz
+Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.11.3.tar.gz
 Source1  : dovecot.service
 Source2  : dovecot.tmpfiles
-Source3  : https://dovecot.org/releases/2.3/dovecot-2.3.10.1.tar.gz.sig
+Source3  : https://dovecot.org/releases/2.3/dovecot-2.3.11.3.tar.gz.sig
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : LGPL-2.1 MIT
@@ -166,15 +166,15 @@ services components for the dovecot package.
 
 
 %prep
-%setup -q -n dovecot-2.3.10.1
-cd %{_builddir}/dovecot-2.3.10.1
+%setup -q -n dovecot-2.3.11.3
+cd %{_builddir}/dovecot-2.3.11.3
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1589996534
+export SOURCE_DATE_EPOCH=1597245386
 export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
@@ -199,15 +199,15 @@ export LANG=C.UTF-8
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
-make VERBOSE=1 V=1 %{?_smp_mflags} check || :
+make %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1589996534
+export SOURCE_DATE_EPOCH=1597245386
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
-cp %{_builddir}/dovecot-2.3.10.1/COPYING %{buildroot}/usr/share/package-licenses/dovecot/9de8baa1908ab951af2ac0cb1e9766a1112b6d3c
-cp %{_builddir}/dovecot-2.3.10.1/COPYING.LGPL %{buildroot}/usr/share/package-licenses/dovecot/01a6b4bf79aca9b556822601186afab86e8c4fbf
-cp %{_builddir}/dovecot-2.3.10.1/COPYING.MIT %{buildroot}/usr/share/package-licenses/dovecot/1fd24bfd5341b8cac234cb1b30ce767f936adbe0
+cp %{_builddir}/dovecot-2.3.11.3/COPYING %{buildroot}/usr/share/package-licenses/dovecot/9de8baa1908ab951af2ac0cb1e9766a1112b6d3c
+cp %{_builddir}/dovecot-2.3.11.3/COPYING.LGPL %{buildroot}/usr/share/package-licenses/dovecot/01a6b4bf79aca9b556822601186afab86e8c4fbf
+cp %{_builddir}/dovecot-2.3.11.3/COPYING.MIT %{buildroot}/usr/share/package-licenses/dovecot/1fd24bfd5341b8cac234cb1b30ce767f936adbe0
 %make_install
 mkdir -p %{buildroot}/usr/lib/systemd/system
 install -m 0644 %{SOURCE1} %{buildroot}/usr/lib/systemd/system/dovecot.service
@@ -285,6 +285,7 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 /usr/include/dovecot/auth-master.h
 /usr/include/dovecot/auth-penalty.h
 /usr/include/dovecot/auth-policy.h
+/usr/include/dovecot/auth-request-handler-private.h
 /usr/include/dovecot/auth-request-handler.h
 /usr/include/dovecot/auth-request-stats.h
 /usr/include/dovecot/auth-request-var-expand.h
@@ -662,6 +663,7 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 /usr/include/dovecot/mdbox-storage-rebuild.h
 /usr/include/dovecot/mdbox-storage.h
 /usr/include/dovecot/mdbox-sync.h
+/usr/include/dovecot/mech-digest-md5-private.h
 /usr/include/dovecot/mech-otp-skey-common.h
 /usr/include/dovecot/mech-plain-common.h
 /usr/include/dovecot/mech-scram.h
@@ -708,6 +710,7 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 /usr/include/dovecot/ostream-private.h
 /usr/include/dovecot/ostream-rawlog.h
 /usr/include/dovecot/ostream-unix.h
+/usr/include/dovecot/ostream-wrapper.h
 /usr/include/dovecot/ostream-zlib.h
 /usr/include/dovecot/ostream.h
 /usr/include/dovecot/passdb-blocking.h
