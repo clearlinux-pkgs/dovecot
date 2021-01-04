@@ -1,3 +1,5 @@
+Configure miss: x86_64-generic-linux-gnu-flex
+Configure miss: x86_64-generic-linux-gnu-bison
 Configure miss: sys/fs/ufs_quota.h usability
 Configure miss: sys/fs/ufs_quota.h presence
 Configure miss: sys/fs/ufs_quota.h
@@ -34,6 +36,7 @@ Configure miss: ucred.h
 Configure miss: sys/ucred.h usability
 Configure miss: sys/ucred.h presence
 Configure miss: whether gcc is clang 3.3+
+Configure miss: whether we want undefined behaviour sanitizer
 Configure miss: kevent
 Configure miss: walkcontext
 Configure miss: struct sockpeercred

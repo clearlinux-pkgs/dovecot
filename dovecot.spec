@@ -5,13 +5,13 @@
 # Source0 file verified with key 0x18A348AEED409DA1 (dovecot-ce@dovecot.org)
 #
 Name     : dovecot
-Version  : 2.3.11.3
-Release  : 30
-URL      : https://dovecot.org/releases/2.3/dovecot-2.3.11.3.tar.gz
-Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.11.3.tar.gz
+Version  : 2.3.13
+Release  : 31
+URL      : https://dovecot.org/releases/2.3/dovecot-2.3.13.tar.gz
+Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.13.tar.gz
 Source1  : dovecot.service
 Source2  : dovecot.tmpfiles
-Source3  : https://dovecot.org/releases/2.3/dovecot-2.3.11.3.tar.gz.sig
+Source3  : https://dovecot.org/releases/2.3/dovecot-2.3.13.tar.gz.sig
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : LGPL-2.1 MIT
@@ -24,10 +24,12 @@ Requires: dovecot-license = %{version}-%{release}
 Requires: dovecot-man = %{version}-%{release}
 Requires: dovecot-services = %{version}-%{release}
 BuildRequires : Linux-PAM-dev
+BuildRequires : bison
 BuildRequires : bzip2-dev
 BuildRequires : clucene-core-dev
 BuildRequires : cyrus-sasl-dev
 BuildRequires : expat-dev
+BuildRequires : flex
 BuildRequires : libcap-dev
 BuildRequires : lz4-dev
 BuildRequires : mariadb-dev
@@ -166,15 +168,15 @@ services components for the dovecot package.
 
 
 %prep
-%setup -q -n dovecot-2.3.11.3
-cd %{_builddir}/dovecot-2.3.11.3
+%setup -q -n dovecot-2.3.13
+cd %{_builddir}/dovecot-2.3.13
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1597245386
+export SOURCE_DATE_EPOCH=1609775253
 export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
@@ -202,12 +204,11 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1597245386
+export SOURCE_DATE_EPOCH=1609775253
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
-cp %{_builddir}/dovecot-2.3.11.3/COPYING %{buildroot}/usr/share/package-licenses/dovecot/9de8baa1908ab951af2ac0cb1e9766a1112b6d3c
-cp %{_builddir}/dovecot-2.3.11.3/COPYING.LGPL %{buildroot}/usr/share/package-licenses/dovecot/01a6b4bf79aca9b556822601186afab86e8c4fbf
-cp %{_builddir}/dovecot-2.3.11.3/COPYING.MIT %{buildroot}/usr/share/package-licenses/dovecot/1fd24bfd5341b8cac234cb1b30ce767f936adbe0
+cp %{_builddir}/dovecot-2.3.13/COPYING.LGPL %{buildroot}/usr/share/package-licenses/dovecot/01a6b4bf79aca9b556822601186afab86e8c4fbf
+cp %{_builddir}/dovecot-2.3.13/COPYING.MIT %{buildroot}/usr/share/package-licenses/dovecot/1fd24bfd5341b8cac234cb1b30ce767f936adbe0
 %make_install
 mkdir -p %{buildroot}/usr/lib/systemd/system
 install -m 0644 %{SOURCE1} %{buildroot}/usr/lib/systemd/system/dovecot.service
@@ -357,6 +358,8 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 /usr/include/dovecot/dsync-ibc.h
 /usr/include/dovecot/eacces-error.h
 /usr/include/dovecot/env-util.h
+/usr/include/dovecot/event-filter-parser.h
+/usr/include/dovecot/event-filter-private.h
 /usr/include/dovecot/event-filter.h
 /usr/include/dovecot/event-log.h
 /usr/include/dovecot/execv-const.h
@@ -664,7 +667,7 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 /usr/include/dovecot/mdbox-storage.h
 /usr/include/dovecot/mdbox-sync.h
 /usr/include/dovecot/mech-digest-md5-private.h
-/usr/include/dovecot/mech-otp-skey-common.h
+/usr/include/dovecot/mech-otp-common.h
 /usr/include/dovecot/mech-plain-common.h
 /usr/include/dovecot/mech-scram.h
 /usr/include/dovecot/mech.h
@@ -831,6 +834,7 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 /usr/include/dovecot/subscription-file.h
 /usr/include/dovecot/syslog-util.h
 /usr/include/dovecot/test-common.h
+/usr/include/dovecot/test-subprocess.h
 /usr/include/dovecot/time-util.h
 /usr/include/dovecot/unichar.h
 /usr/include/dovecot/unix-socket-create.h
@@ -839,7 +843,6 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 /usr/include/dovecot/uri-util.h
 /usr/include/dovecot/userdb-blocking.h
 /usr/include/dovecot/userdb-template.h
-/usr/include/dovecot/userdb-vpopmail.h
 /usr/include/dovecot/userdb.h
 /usr/include/dovecot/utc-mktime.h
 /usr/include/dovecot/utc-offset.h
@@ -995,7 +998,6 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 %defattr(0644,root,root,0755)
 /usr/share/package-licenses/dovecot/01a6b4bf79aca9b556822601186afab86e8c4fbf
 /usr/share/package-licenses/dovecot/1fd24bfd5341b8cac234cb1b30ce767f936adbe0
-/usr/share/package-licenses/dovecot/9de8baa1908ab951af2ac0cb1e9766a1112b6d3c
 
 %files man
 %defattr(0644,root,root,0755)

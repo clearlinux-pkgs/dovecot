@@ -1,5 +1,7 @@
-2.3.11.3
+2.3.13
+bison
 cyrus-sasl-dev
 expat-dev
+flex
 openldap-dev
 pandoc
