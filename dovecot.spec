@@ -5,13 +5,13 @@
 # Source0 file verified with key 0x18A348AEED409DA1 (dovecot-ce@dovecot.org)
 #
 Name     : dovecot
-Version  : 2.3.14
-Release  : 32
-URL      : https://dovecot.org/releases/2.3/dovecot-2.3.14.tar.gz
-Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.14.tar.gz
+Version  : 2.3.15
+Release  : 33
+URL      : https://dovecot.org/releases/2.3/dovecot-2.3.15.tar.gz
+Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.15.tar.gz
 Source1  : dovecot.service
 Source2  : dovecot.tmpfiles
-Source3  : https://dovecot.org/releases/2.3/dovecot-2.3.14.tar.gz.sig
+Source3  : https://dovecot.org/releases/2.3/dovecot-2.3.15.tar.gz.sig
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : LGPL-2.1 MIT
@@ -39,7 +39,9 @@ BuildRequires : pandoc
 BuildRequires : pkgconfig(sqlite3)
 BuildRequires : pkgconfig(zlib)
 BuildRequires : postgresql-dev
+BuildRequires : systemd-dev
 BuildRequires : xz-dev
+BuildRequires : zstd-dev
 
 %description
 INSTALLATION
@@ -168,15 +170,15 @@ services components for the dovecot package.
 
 
 %prep
-%setup -q -n dovecot-2.3.14
-cd %{_builddir}/dovecot-2.3.14
+%setup -q -n dovecot-2.3.15
+cd %{_builddir}/dovecot-2.3.15
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1614872347
+export SOURCE_DATE_EPOCH=1624289034
 export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
@@ -204,11 +206,11 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1614872347
+export SOURCE_DATE_EPOCH=1624289034
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
-cp %{_builddir}/dovecot-2.3.14/COPYING.LGPL %{buildroot}/usr/share/package-licenses/dovecot/01a6b4bf79aca9b556822601186afab86e8c4fbf
-cp %{_builddir}/dovecot-2.3.14/COPYING.MIT %{buildroot}/usr/share/package-licenses/dovecot/1fd24bfd5341b8cac234cb1b30ce767f936adbe0
+cp %{_builddir}/dovecot-2.3.15/COPYING.LGPL %{buildroot}/usr/share/package-licenses/dovecot/01a6b4bf79aca9b556822601186afab86e8c4fbf
+cp %{_builddir}/dovecot-2.3.15/COPYING.MIT %{buildroot}/usr/share/package-licenses/dovecot/1fd24bfd5341b8cac234cb1b30ce767f936adbe0
 %make_install
 mkdir -p %{buildroot}/usr/lib/systemd/system
 install -m 0644 %{SOURCE1} %{buildroot}/usr/lib/systemd/system/dovecot.service
@@ -316,6 +318,7 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 /usr/include/dovecot/config-request.h
 /usr/include/dovecot/config.h
 /usr/include/dovecot/connection.h
+/usr/include/dovecot/cpu-limit.h
 /usr/include/dovecot/crc32.h
 /usr/include/dovecot/data-stack.h
 /usr/include/dovecot/db-checkpassword.h
@@ -1049,3 +1052,4 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 %files services
 %defattr(-,root,root,-)
 /usr/lib/systemd/system/dovecot.service
+/usr/lib/systemd/system/dovecot.socket
