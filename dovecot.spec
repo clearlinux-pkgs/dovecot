@@ -5,13 +5,13 @@
 # Source0 file verified with key 0x18A348AEED409DA1 (dovecot-ce@dovecot.org)
 #
 Name     : dovecot
-Version  : 2.3.16
-Release  : 34
-URL      : https://dovecot.org/releases/2.3/dovecot-2.3.16.tar.gz
-Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.16.tar.gz
+Version  : 2.3.17
+Release  : 35
+URL      : https://dovecot.org/releases/2.3/dovecot-2.3.17.tar.gz
+Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.17.tar.gz
 Source1  : dovecot.service
 Source2  : dovecot.tmpfiles
-Source3  : https://dovecot.org/releases/2.3/dovecot-2.3.16.tar.gz.sig
+Source3  : https://dovecot.org/releases/2.3/dovecot-2.3.17.tar.gz.sig
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : LGPL-2.1 MIT
@@ -170,15 +170,15 @@ services components for the dovecot package.
 
 
 %prep
-%setup -q -n dovecot-2.3.16
-cd %{_builddir}/dovecot-2.3.16
+%setup -q -n dovecot-2.3.17
+cd %{_builddir}/dovecot-2.3.17
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1628261947
+export SOURCE_DATE_EPOCH=1635430892
 export GCC_IGNORE_WERROR=1
 export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wno-error -Wl,-z,max-page-size=0x1000 -march=westmere -mtune=haswell"
 export CXXFLAGS=$CFLAGS
@@ -206,11 +206,11 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make %{?_smp_mflags} check || :
 
 %install
-export SOURCE_DATE_EPOCH=1628261947
+export SOURCE_DATE_EPOCH=1635430892
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/package-licenses/dovecot
-cp %{_builddir}/dovecot-2.3.16/COPYING.LGPL %{buildroot}/usr/share/package-licenses/dovecot/01a6b4bf79aca9b556822601186afab86e8c4fbf
-cp %{_builddir}/dovecot-2.3.16/COPYING.MIT %{buildroot}/usr/share/package-licenses/dovecot/1fd24bfd5341b8cac234cb1b30ce767f936adbe0
+cp %{_builddir}/dovecot-2.3.17/COPYING.LGPL %{buildroot}/usr/share/package-licenses/dovecot/01a6b4bf79aca9b556822601186afab86e8c4fbf
+cp %{_builddir}/dovecot-2.3.17/COPYING.MIT %{buildroot}/usr/share/package-licenses/dovecot/1fd24bfd5341b8cac234cb1b30ce767f936adbe0
 %make_install
 mkdir -p %{buildroot}/usr/lib/systemd/system
 install -m 0644 %{SOURCE1} %{buildroot}/usr/lib/systemd/system/dovecot.service
@@ -628,6 +628,7 @@ ln -sf /usr/lib/systemd/system/dovecot.service %{buildroot}/usr/share/clr-servic
 /usr/include/dovecot/mailbox-list-subscriptions.h
 /usr/include/dovecot/mailbox-list.h
 /usr/include/dovecot/mailbox-log.h
+/usr/include/dovecot/mailbox-match-plugin.h
 /usr/include/dovecot/mailbox-recent-flags.h
 /usr/include/dovecot/mailbox-search-result-private.h
 /usr/include/dovecot/mailbox-tree.h
