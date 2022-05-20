@@ -4,6 +4,7 @@ libcap.so.2
 libcrypt.so.1
 libcrypto.so.1.1
 libexpat.so.1
+libgcc_s.so.1
 liblber-2.4.so.2
 libldap-2.4.so.2
 liblz4.so.1
