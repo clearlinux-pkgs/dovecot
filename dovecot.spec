@@ -6,7 +6,7 @@
 #
 Name     : dovecot
 Version  : 2.3.19.1
-Release  : 39
+Release  : 40
 URL      : https://dovecot.org/releases/2.3/dovecot-2.3.19.1.tar.gz
 Source0  : https://dovecot.org/releases/2.3/dovecot-2.3.19.1.tar.gz
 Source1  : dovecot.service
