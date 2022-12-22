@@ -9,3 +9,4 @@ mariadb-dev
 openssl-dev
 postgresql-dev
 xz-dev
+libtirpc-dev
