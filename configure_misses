@@ -1,78 +1,150 @@
+Configure miss: 32-bit host C ABI
+Configure miss: 32-bit host C ABI
+Configure miss: FreeBSD compatible sendfile()
 Configure miss: FreeBSD compatible sendfile()
 Configure miss: LIBSODIUM
-Configure miss: LIBTIRPC
+Configure miss: LIBSODIUM
+Configure miss: SSL_COMP_free_compression_methods in -lssl
 Configure miss: SSL_COMP_free_compression_methods in -lssl
 Configure miss: auth_userokay
+Configure miss: auth_userokay
+Configure miss: ber_free in -lldap
 Configure miss: ber_free in -lldap
 Configure miss: crypt
+Configure miss: crypt
+Configure miss: if Q_QUOTACTL ioctl exists
 Configure miss: if Q_QUOTACTL ioctl exists
 Configure miss: if statfs.f_mntfromname exists
+Configure miss: if statfs.f_mntfromname exists
+Configure miss: if statvfs.f_mntfromname exists
 Configure miss: if statvfs.f_mntfromname exists
 Configure miss: if struct dqblk.dqb_curblocks exists
+Configure miss: if struct dqblk.dqb_curblocks exists
+Configure miss: if struct stat has st_?timespec fields
 Configure miss: if struct stat has st_?timespec fields
 Configure miss: jfs/quota.h
+Configure miss: jfs/quota.h
+Configure miss: jfs/quota.h presence
 Configure miss: jfs/quota.h presence
 Configure miss: jfs/quota.h usability
+Configure miss: jfs/quota.h usability
+Configure miss: kevent
 Configure miss: kevent
 Configure miss: library containing quota_open
+Configure miss: library containing quota_open
+Configure miss: malloc_np.h
 Configure miss: malloc_np.h
 Configure miss: malloc_np.h presence
+Configure miss: malloc_np.h presence
+Configure miss: malloc_np.h usability
 Configure miss: malloc_np.h usability
 Configure miss: pam/pam_appl.h
+Configure miss: pam/pam_appl.h
+Configure miss: pam/pam_appl.h presence
 Configure miss: pam/pam_appl.h presence
 Configure miss: pam/pam_appl.h usability
+Configure miss: pam/pam_appl.h usability
+Configure miss: quota.h
 Configure miss: quota.h
 Configure miss: quota.h presence
+Configure miss: quota.h presence
 Configure miss: quota.h usability
-Configure miss: rpc/rpc.h
-Configure miss: rpc/rpc.h presence
-Configure miss: rpc/rpc.h usability
+Configure miss: quota.h usability
+Configure miss: sasl.h
 Configure miss: sasl.h
 Configure miss: sasl.h presence
+Configure miss: sasl.h presence
+Configure miss: sasl.h usability
 Configure miss: sasl.h usability
 Configure miss: sb_stemmer_new in -lstemmer
+Configure miss: sb_stemmer_new in -lstemmer
+Configure miss: sendfile in -lsendfile
 Configure miss: sendfile in -lsendfile
 Configure miss: special_textcat_Init in -lexttextcat
+Configure miss: special_textcat_Init in -lexttextcat
+Configure miss: special_textcat_Init in -ltextcat
 Configure miss: special_textcat_Init in -ltextcat
 Configure miss: struct sockpeercred
+Configure miss: struct sockpeercred
+Configure miss: sys/apparmor.h
 Configure miss: sys/apparmor.h
 Configure miss: sys/apparmor.h presence
+Configure miss: sys/apparmor.h presence
+Configure miss: sys/apparmor.h usability
 Configure miss: sys/apparmor.h usability
 Configure miss: sys/event.h
+Configure miss: sys/event.h
+Configure miss: sys/event.h presence
 Configure miss: sys/event.h presence
 Configure miss: sys/event.h usability
+Configure miss: sys/event.h usability
+Configure miss: sys/fs/quota_common.h
 Configure miss: sys/fs/quota_common.h
 Configure miss: sys/fs/quota_common.h presence
+Configure miss: sys/fs/quota_common.h presence
+Configure miss: sys/fs/quota_common.h usability
 Configure miss: sys/fs/quota_common.h usability
 Configure miss: sys/fs/ufs_quota.h
+Configure miss: sys/fs/ufs_quota.h
+Configure miss: sys/fs/ufs_quota.h presence
 Configure miss: sys/fs/ufs_quota.h presence
 Configure miss: sys/fs/ufs_quota.h usability
+Configure miss: sys/fs/ufs_quota.h usability
+Configure miss: sys/mnttab.h
 Configure miss: sys/mnttab.h
 Configure miss: sys/mnttab.h presence
+Configure miss: sys/mnttab.h presence
+Configure miss: sys/mnttab.h usability
 Configure miss: sys/mnttab.h usability
 Configure miss: sys/ucred.h presence
+Configure miss: sys/ucred.h presence
+Configure miss: sys/ucred.h usability
 Configure miss: sys/ucred.h usability
 Configure miss: sys/vmount.h
+Configure miss: sys/vmount.h
+Configure miss: sys/vmount.h presence
 Configure miss: sys/vmount.h presence
 Configure miss: sys/vmount.h usability
+Configure miss: sys/vmount.h usability
+Configure miss: ucred.h
 Configure miss: ucred.h
 Configure miss: ucred.h presence
+Configure miss: ucred.h presence
+Configure miss: ucred.h usability
 Configure miss: ucred.h usability
 Configure miss: ufs/ufs/quota.h
+Configure miss: ufs/ufs/quota.h
+Configure miss: ufs/ufs/quota.h presence
 Configure miss: ufs/ufs/quota.h presence
 Configure miss: ufs/ufs/quota.h usability
+Configure miss: ufs/ufs/quota.h usability
+Configure miss: uoff_t
 Configure miss: uoff_t
 Configure miss: walkcontext
+Configure miss: walkcontext
+Configure miss: whether ZSTD_minCLevel is declared
 Configure miss: whether ZSTD_minCLevel is declared
 Configure miss: whether dev_t is struct
+Configure miss: whether dev_t is struct
+Configure miss: whether gcc is clang 3.3+
 Configure miss: whether gcc is clang 3.3+
 Configure miss: whether size_t is signed
+Configure miss: whether size_t is signed
+Configure miss: whether va_lists can be copied by value
 Configure miss: whether va_lists can be copied by value
 Configure miss: whether we want undefined behaviour sanitizer
+Configure miss: whether we want undefined behaviour sanitizer
+Configure miss: whether we will be linking in Lua
 Configure miss: whether we will be linking in Lua
 Configure miss: whether we will be linking with libunwind
+Configure miss: whether we will be linking with libunwind
+Configure miss: x86_64-generic-linux-gnu-bison
 Configure miss: x86_64-generic-linux-gnu-bison
 Configure miss: x86_64-generic-linux-gnu-flex
+Configure miss: x86_64-generic-linux-gnu-flex
+Configure miss: xfs/xqm.h
 Configure miss: xfs/xqm.h
 Configure miss: xfs/xqm.h presence
+Configure miss: xfs/xqm.h presence
+Configure miss: xfs/xqm.h usability
 Configure miss: xfs/xqm.h usability
