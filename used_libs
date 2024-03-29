@@ -8,7 +8,6 @@ libgcc_s.so.1
 liblber.so.2
 libldap.so.2
 liblz4.so.1
-liblzma.so.5
 libm.so.6
 libpam.so.0
 libsqlite3.so.0
