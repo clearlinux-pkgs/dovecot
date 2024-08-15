@@ -22,6 +22,8 @@ Configure miss: if struct dqblk.dqb_curblocks exists
 Configure miss: if struct dqblk.dqb_curblocks exists
 Configure miss: if struct stat has st_?timespec fields
 Configure miss: if struct stat has st_?timespec fields
+Configure miss: if we should use _XPG6 macro for crypt()
+Configure miss: if we should use _XPG6 macro for crypt()
 Configure miss: jfs/quota.h
 Configure miss: jfs/quota.h
 Configure miss: jfs/quota.h presence
@@ -32,6 +34,12 @@ Configure miss: kevent
 Configure miss: kevent
 Configure miss: library containing quota_open
 Configure miss: library containing quota_open
+Configure miss: lzma.h
+Configure miss: lzma.h
+Configure miss: lzma.h presence
+Configure miss: lzma.h presence
+Configure miss: lzma.h usability
+Configure miss: lzma.h usability
 Configure miss: malloc_np.h
 Configure miss: malloc_np.h
 Configure miss: malloc_np.h presence
